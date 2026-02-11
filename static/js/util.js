@@ -598,16 +598,23 @@ function getCompositeScore(station, term) {
 }
 
 function stationSearchAutocomplete(autoClass, visitedStations, url, manual) {
+  var currentXhr = null;
+  
   $(autoClass).autocomplete({
+    minLength: 2,
+    delay: 300,
     source: function (request, response) {
       var inputElement = this.element;
-
+      
+      // Abort previous request
+      if (currentXhr) {
+        currentXhr.abort();
+      }
+      
       // Show spinner
       inputElement.addClass("spinning loading");
-
       var manStationList = $.ui.autocomplete.filter(manualStationsList, request.term);
-
-      $.ajax({
+      currentXhr = $.ajax({
         url: url,
         dataType: "json",
         data: {
@@ -623,10 +630,8 @@ function stationSearchAutocomplete(autoClass, visitedStations, url, manual) {
             stationList.push({ "label": displayLabel, "value": displayLabel, "disambiguation": disambiguation });
             globalStationDict[displayLabel] = [item.geometry.coordinates.reverse(), label];
           });
-
           // Combine manual stations and fetched stations
           var combinedList = manStationList.concat(stationList);
-
           // Add occurrences, similarity, and position scores to station objects
           combinedList.forEach(function (station) {
             station.occurrences = visitedStations[station.label] || 0;
@@ -634,24 +639,22 @@ function stationSearchAutocomplete(autoClass, visitedStations, url, manual) {
             station.positionScore = getPositionScore(request.term, station.label);
             station.compositeScore = getCompositeScore(station, request.term);
           });
-
           // Sort the list by composite score
           combinedList.sort(function (a, b) {
             return b.compositeScore - a.compositeScore;
           });
-
           // Limit the results to a maximum of 20 elements
           var limitedList = combinedList.slice(0, 20);
-
           // Hide spinner
           inputElement.removeClass("spinning");
-
           response(limitedList);
         },
-        error: function () {
+        error: function (xhr, status) {
           // Hide spinner on error (optional)
           inputElement.removeClass("spinning");
-          inputElement.addClass("error")
+          if (status !== 'abort') {
+            inputElement.addClass("error");
+          }
         }
       });
     },
