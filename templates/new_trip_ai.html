@@ -4,14 +4,19 @@
 <div class="container mt-4">
   <div class="row">
     <div class="col-md-8 offset-md-2">
-      <h2 class="mb-3 text-center">
-        {{ l.get("ai_trip_title", "Create trip from text") }}
-        {% if ai_calls == 'premium' %}
-          <small><i class="fa-solid fa-gem" style="color: #F39C12;"></i></small>
-        {% else %}
-          <small class="text-muted">({{ ai_calls }}/10)</small>
-        {% endif %}
-      </h2>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">
+          {{ l.get("ai_trip_title", "Create trip from text") }}
+          {% if ai_calls == 'premium' %}
+            <small><i class="fa-solid fa-gem" style="color: #F39C12;"></i></small>
+          {% else %}
+            <small class="text-muted">({{ ai_calls }}/10)</small>
+          {% endif %}
+        </h2>
+        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#aiInfoModal">
+          <i class="bi bi-info-circle"></i>
+        </button>
+      </div>
 
       {% if ai_calls is number and ai_calls >= 10 %}
       <div class="alert alert-warning">
@@ -21,28 +26,28 @@
       
       <div id="inputSection">
         <form id="parseForm">
-          <div class="form-group mb-3">
-            <label for="text">{{ l.get("ai_trip_description", "Describe your trip or paste an image") }}</label>
+          <div class="mb-4">
+            <label for="text" class="form-label fw-semibold">{{ l.get("ai_trip_description", "Describe your trip or paste an image") }}</label>
             <textarea class="form-control" id="text" name="text" rows="5" placeholder="{{ l.get('ai_trip_placeholder', 'e.g. Train from Paris to Lyon on March 15th at 14:30, or paste a screenshot') }}"></textarea>
           </div>
           
-          <div class="form-group mb-3">
-            <label>{{ l.get("ai_trip_files", "Or upload files") }}</label>
-            <div id="dropZone" class="border border-2 border-dashed rounded p-4 text-center" style="cursor:pointer; border-color:#ccc;">
+          <div class="mb-4">
+            <label class="form-label fw-semibold">{{ l.get("ai_trip_files", "Or upload files") }}</label>
+            <div id="dropZone" class="border border-2 border-dashed rounded-3 p-4 text-center bg-light" style="cursor:pointer; transition: all 0.2s;">
               <div id="dropText">
-                <i class="bi bi-cloud-upload fs-2 text-muted"></i>
-                <p class="mb-0 text-muted">{{ l.get("ai_drop_files", "Drop files here or click to browse") }}</p>
+                <i class="bi bi-cloud-upload fs-1 text-secondary mb-2"></i>
+                <p class="mb-1">{{ l.get("ai_drop_files", "Drop files here or click to browse") }}</p>
                 <small class="text-muted">PDF, ICS, CSV, PNG, JPG</small>
               </div>
-              <div id="fileList" class="mt-2"></div>
+              <div id="fileList" class="mt-3"></div>
             </div>
             <input type="file" id="fileInput" name="files" multiple accept=".pdf,.ics,.csv,.png,.jpg,.jpeg,.gif,.webp" class="d-none">
           </div>
           
-          <div id="pastePreview" class="mb-3 d-none"></div>
+          <div id="pastePreview" class="mb-4 d-none"></div>
           
-          <button type="submit" class="btn btn-primary w-100" id="parseBtn" {% if ai_calls is number and ai_calls >= 10 %}disabled{% endif %}>
-            <span id="parseBtnText">{{ l.get("analyze", "Analyze") }}</span>
+          <button type="submit" class="btn btn-primary btn-lg w-100" id="parseBtn" {% if ai_calls is number and ai_calls >= 10 %}disabled{% endif %}>
+            <span id="parseBtnText"><i class="bi bi-magic me-2"></i>{{ l.get("analyze", "Analyze") }}</span>
             <span id="parseBtnSpinner" class="spinner-border spinner-border-sm d-none"></span>
           </button>
         </form>
@@ -50,16 +55,18 @@
       
       <div id="previewSection" class="d-none">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h4>{{ l.get("trips_found", "Trips found") }}</h4>
-          <button class="btn btn-sm btn-outline-secondary" id="backBtn">{{ l.get("back", "Back") }}</button>
+          <h4 class="mb-0">{{ l.get("trips_found", "Trips found") }}</h4>
+          <button class="btn btn-sm btn-outline-secondary" id="backBtn">
+            <i class="bi bi-arrow-left me-1"></i>{{ l.get("back", "Back") }}
+          </button>
         </div>
-        <div id="tripsList"></div>
-        <div class="mt-3 d-flex gap-2">
-          <button class="btn btn-success flex-grow-1" id="saveBtn">
-            <span id="saveBtnText">{{ l.get("save_selected", "Save selected") }}</span>
+        <div id="tripsList" class="mb-3"></div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-success btn-lg flex-grow-1" id="saveBtn">
+            <span id="saveBtnText"><i class="bi bi-check-circle me-2"></i>{{ l.get("save_selected", "Save selected") }}</span>
             <span id="saveBtnSpinner" class="spinner-border spinner-border-sm d-none"></span>
           </button>
-          <button class="btn btn-outline-danger" id="cancelBtn">{{ l.get("cancel", "Cancel") }}</button>
+          <button class="btn btn-outline-danger btn-lg" id="cancelBtn">{{ l.get("cancel", "Cancel") }}</button>
         </div>
       </div>
       
@@ -70,15 +77,74 @@
   </div>
 </div>
 
+<!-- AI Info Modal -->
+<div class="modal fade" id="aiInfoModal" tabindex="-1" aria-labelledby="aiInfoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="aiInfoModalLabel">{{ l.get("ai_info_title", "AI Processing Information") }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>{{ l.get("ai_info_provider", "AI processing is handled by Infomaniak in Switzerland.") }}</p>
+        <p class="mb-2"><strong>{{ l.get("ai_info_models", "Models used:") }}</strong></p>
+        <ul class="mb-3">
+          <li>Mistral-Small-3.2-24B-Instruct-2506</li>
+          <li>Qwen3-VL-235B-A22B-Instruct</li>
+        </ul>
+        <p>{{ l.get("ai_info_privacy", "These open-source models are run directly by Infomaniak without logging or storing your data. Trainlog only retains the trips you choose to save in your account.") }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ l.get("close", "Close") }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <style>
-.trip-card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 10px; }
-.trip-card.selected { border-color: #198754; background: #f8fff8; }
-.trip-card:hover { border-color: #aaa; cursor: pointer; }
-.trip-header { font-weight: bold; font-size: 1.1em; }
-.trip-details { color: #666; font-size: 0.9em; margin-top: 5px; }
-#dropZone.dragover { border-color: #0d6efd !important; background: #f0f7ff; }
-.file-item { display: inline-flex; align-items: center; background: #e9ecef; padding: 4px 8px; border-radius: 4px; margin: 4px; font-size: 0.85em; }
-.file-item .remove { cursor: pointer; margin-left: 6px; color: #dc3545; }
+.trip-card { 
+  border: 2px solid #dee2e6; 
+  border-radius: 0.5rem; 
+  padding: 1rem; 
+  margin-bottom: 0.75rem; 
+  transition: all 0.2s;
+  background: white;
+}
+.trip-card.selected { 
+  border-color: #198754; 
+  background: #f8fff8; 
+  box-shadow: 0 2px 8px rgba(25, 135, 84, 0.15);
+}
+.trip-card:hover { 
+  border-color: #adb5bd; 
+  cursor: pointer; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.trip-header { font-weight: 600; font-size: 1.1em; }
+.trip-details { color: #6c757d; font-size: 0.9em; margin-top: 0.5rem; }
+#dropZone.dragover { 
+  border-color: #0d6efd !important; 
+  background: #e7f1ff !important; 
+  transform: scale(1.01);
+}
+.file-item { 
+  display: inline-flex; 
+  align-items: center; 
+  background: #e9ecef; 
+  padding: 0.375rem 0.75rem; 
+  border-radius: 0.375rem; 
+  margin: 0.25rem; 
+  font-size: 0.875em; 
+}
+.file-item .remove { 
+  cursor: pointer; 
+  margin-left: 0.5rem; 
+  color: #dc3545; 
+  font-weight: bold;
+}
+.file-item .remove:hover {
+  color: #bb2d3b;
+}
 </style>
 
 <script>
@@ -124,7 +190,7 @@ function renderFileList() {
     return;
   }
   list.innerHTML = selectedFiles.map((f, i) => 
-    `<span class="file-item">${f.name} <span class="remove" data-idx="${i}">&times;</span></span>`
+    `<span class="file-item"><i class="bi bi-file-earmark me-1"></i>${f.name} <span class="remove" data-idx="${i}">&times;</span></span>`
   ).join('');
 }
 
@@ -154,13 +220,13 @@ function renderPastedImages() {
     return;
   }
   
-  let html = '<label>{{ l.get("pasted_images", "Pasted images") }}</label><div>';
+  let html = '<label class="form-label fw-semibold">{{ l.get("pasted_images", "Pasted images") }}</label><div>';
   pastedFiles.forEach((file, i) => {
     const url = URL.createObjectURL(file);
     html += `
       <div class="position-relative d-inline-block me-2 mb-2">
         <img src="${url}" class="img-thumbnail" style="max-height:100px;">
-        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 remove-paste" data-idx="${i}">&times;</button>
+        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 remove-paste" data-idx="${i}" style="padding: 0.125rem 0.375rem;">&times;</button>
       </div>
     `;
   });
@@ -233,17 +299,17 @@ function renderTrips(trips) {
     const cardClass = failed ? 'trip-card' : 'trip-card selected';
     
     html += '<div class="' + cardClass + '" data-index="' + i + '">';
-    html += '<div class="d-flex justify-content-between">';
-    html += '<div class="trip-header">' + origin + ' → ' + dest + '</div>';
+    html += '<div class="d-flex justify-content-between align-items-start">';
+    html += '<div class="trip-header flex-grow-1">' + origin + ' → ' + dest + '</div>';
     if (!failed) {
-      html += '<input type="checkbox" class="trip-checkbox form-check-input" checked>';
+      html += '<input type="checkbox" class="trip-checkbox form-check-input ms-2" checked style="width: 1.25rem; height: 1.25rem;">';
     } else {
-      html += '<span class="badge bg-warning">{{ l.get("geocode_failed", "Could not locate") }}</span>';
+      html += '<span class="badge bg-warning ms-2">{{ l.get("geocode_failed", "Could not locate") }}</span>';
     }
     html += '</div>';
     html += '<div class="trip-details">';
-    html += '<div><strong>' + t.type + '</strong> | ' + date + (time ? ' | ' + time : '') + '</div>';
-    if (details.length) html += '<div>' + details.join(' | ') + '</div>';
+    html += '<div><strong>' + t.type + '</strong> · ' + date + (time ? ' · ' + time : '') + '</div>';
+    if (details.length) html += '<div>' + details.join(' · ') + '</div>';
     html += '</div></div>';
   });
   $('#tripsList').html(html);
