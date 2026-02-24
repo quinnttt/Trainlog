@@ -94,7 +94,27 @@
     /* Misc */
     .compo-trigger { cursor: pointer; color: #0d6efd; }
     .compo-trigger:hover { text-decoration: underline; }
-    .compo-source { color: #888; font-size: 0.7rem; margin-top: 5px; text-align: right; }
+    .compo-source{
+        font-size: 0.7rem;
+        color: #6c757d;
+        text-align: right;
+        margin-top: 6px;
+        padding: 4px 12px 0;
+        letter-spacing: 0.02em;
+    }
+
+    .compo-source a{
+        color: #495057;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.15s ease;
+    }
+
+    .compo-source a:hover,
+    .compo-source a:focus{
+        color: #212529;   
+        text-decoration: none;
+    }
 </style>
 
 </style>
@@ -408,7 +428,7 @@ function openCompositionModal(trainName, dateStr) {
             $modalBody.empty().append(container);
             
             // Add source footer
-            $modalBody.append('<div class="compo-source">Data provided by vagonWEB</div>');
+            $modalBody.append(`<div class="compo-source">Source: <a href="https://www.vagonweb.cz/razeni/" target="_blank">vagonWEB.cz</a></div>`);
 
             // Initialize tooltips
             container.find('[data-toggle="tooltip"]').tooltip();
@@ -802,7 +822,58 @@ function renderMaterialType(data, type, row){
 
 var table = $('#tripRows');
 
+    const SEARCH_PREFIXES = {
+        'type:': {{ trip_column_names.index("type") }},
+        'from:': {{ trip_column_names.index("origin_station") }},
+        'to:': {{ trip_column_names.index("destination_station") }},
+        'date:': {{ trip_column_names.index("start_datetime") }},
+        'operator:': {{ trip_column_names.index("operator") }},
+        'line:': {{ trip_column_names.index("line_name") }},
+        'country:': {{ trip_column_names.index("countries") }},
+        'visibility:': {{ trip_column_names.index("visibility") }},
+        'material:': {{ trip_column_names.index("material_type") }},
+        'reg:': {{ trip_column_names.index("reg") }},
+        'notes:': {{ trip_column_names.index("notes") }}
+    };
+
+    function parseSmartSearch(searchValue) {
+        const columnFilters = {};
+        let globalSearch = '';
+        const terms = searchValue.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) || [];
+        terms.forEach(term => {
+            let matched = false;
+            for (const [prefix, columnIndex] of Object.entries(SEARCH_PREFIXES)) {
+                if (term.toLowerCase().startsWith(prefix)) {
+                    let value = term.substring(prefix.length);
+                    let isExact = false;
+                    if (value) {
+                        if (value.startsWith("'") && value.endsWith("'") && value.length > 1) {
+                            value = value.slice(1, -1);
+                            isExact = true;
+                        } else if (value.startsWith('"') && value.endsWith('"') && value.length > 1) {
+                            value = value.slice(1, -1);
+                            isExact = false;
+                        }
+                        columnFilters[columnIndex] = { value, isExact };
+                        matched = true;
+                        break;
+                    }
+                }
+            }
+            if (!matched) {
+                let cleanTerm = term;
+                if ((term.startsWith('"') && term.endsWith('"')) ||
+                    (term.startsWith("'") && term.endsWith("'"))) {
+                    cleanTerm = term.slice(1, -1);
+                }
+                globalSearch += (globalSearch ? ' ' : '') + cleanTerm;
+            }
+        });
+        return { columnFilters, globalSearch };
+    }
+
     var scroll = new URLSearchParams(window.location.search).get('scroll') === 'true'
+    var initialSearch = new URLSearchParams(window.location.search).get('search') || '';
     var tableObject = $('#dataTable').DataTable({
     processing: true,
     serverSide: true,
@@ -882,6 +953,7 @@ var table = $('#tripRows');
     ],
     rowId: 'id',
     stateSave: false,
+    search: { search: initialSearch },
     language: {
         info: "{{dtInfo}}",
         paginate: {
@@ -935,6 +1007,16 @@ var table = $('#tripRows');
     resetObjects();
     updateSelectionMessage();
     addPageJumpInput();
+
+    // Sync search value to URL
+    var searchVal = tableObject.search();
+    var url = new URL(window.location);
+    if (searchVal) {
+        url.searchParams.set('search', searchVal);
+    } else {
+        url.searchParams.delete('search');
+    }
+    history.replaceState({}, '', url);
 }).on('select', function(e, dt, type, indexes) {
     var selectedRows = tableObject.rows(indexes).data().toArray();
     selectedRows.forEach(function(row) {
@@ -959,7 +1041,7 @@ var table = $('#tripRows');
     }
     updateSelectionMessage();
 });
-{% if hasUncommonTrips and not isPublic%}
+{% if hasPrivateTrips and not isPublic%}
  // Add the switch to the custom toolbar
     $("div.toolbar").html(`
         <div class="toolbar d-flex justify-content-center justify-content-md-start">
@@ -1375,71 +1457,6 @@ $('#submitBtn').on('click', function() {
         return null;
     }
 
-    const SEARCH_PREFIXES = {
-        'type:': {{ trip_column_names.index("type") }},
-        'from:': {{ trip_column_names.index("origin_station") }},
-        'to:': {{ trip_column_names.index("destination_station") }},
-        'date:': {{ trip_column_names.index("start_datetime") }},
-        'operator:': {{ trip_column_names.index("operator") }},
-        'line:': {{ trip_column_names.index("line_name") }},
-        'country:': {{ trip_column_names.index("countries") }},
-        'visibility:': {{ trip_column_names.index("visibility") }},
-        'material:': {{ trip_column_names.index("material_type") }},
-        'reg:': {{ trip_column_names.index("reg") }},
-        'notes:': {{ trip_column_names.index("notes") }}
-    };
-
-    // Parse search query for prefixes
-    function parseSmartSearch(searchValue) {
-        const columnFilters = {};
-        let globalSearch = '';
-        
-        // Split by spaces but keep quoted strings together
-        // This regex handles both double quotes (") and single quotes (')
-        const terms = searchValue.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) || [];
-        
-        terms.forEach(term => {
-            let matched = false;
-            
-            // Check for prefix matches
-            for (const [prefix, columnIndex] of Object.entries(SEARCH_PREFIXES)) {
-                if (term.toLowerCase().startsWith(prefix)) {
-                    let value = term.substring(prefix.length);
-                    let isExact = false;
-
-                    if (value) {
-                        // Single quotes = exact match
-                        if (value.startsWith("'") && value.endsWith("'") && value.length > 1) {
-                            value = value.slice(1, -1); // Remove quotes
-                            isExact = true;
-                        }
-                        // Double quotes = partial match with spaces
-                        else if (value.startsWith('"') && value.endsWith('"') && value.length > 1) {
-                            value = value.slice(1, -1); // Remove quotes
-                            isExact = false; // Partial match
-                        }
-
-                        columnFilters[columnIndex] = { value, isExact };
-                        matched = true;
-                        break;
-                    }
-                }
-            }
-            
-            // If no prefix matched, add to global search
-            if (!matched) {
-                // Handle quotes in global search too
-                let cleanTerm = term;
-                if ((term.startsWith('"') && term.endsWith('"')) || 
-                    (term.startsWith("'") && term.endsWith("'"))) {
-                    cleanTerm = term.slice(1, -1);
-                }
-                globalSearch += (globalSearch ? ' ' : '') + cleanTerm;
-            }
-        });
-        
-        return { columnFilters, globalSearch };
-    }
     // Initialize the switch based on the cookie state
    $(document).ready(function () {
         const filterSwitch = document.getElementById('filterTypeSwitch');
@@ -1556,7 +1573,6 @@ $('#submitBtn').on('click', function() {
                 });
 
                 var html = $('<div class="compo-container"></div>').append(strip);
-                html.append(`<div class="compo-source">Source: <a href="https://www.vagonweb.cz/razeni/" target="_blank">vagonWEB.cz</a></div>`);
                 container.html(html);
                 container.data('loaded', true);
                 container.find('[data-toggle="tooltip"]').tooltip();

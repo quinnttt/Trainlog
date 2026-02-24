@@ -720,14 +720,14 @@ def saveTripToDb(username, newTrip, newPath, trip_type="train"):
     return trip
 
 
-def hasUncommonTrips(username):
+def hasPrivateTrips(username):
     with managed_cursor(mainConn) as cursor:
         cursor.execute(
             """
             SELECT EXISTS (
                 SELECT 1
                 FROM trip
-                WHERE type NOT IN ('train', 'bus', 'air', 'ferry', 'helicopter', 'tram', 'metro', 'aerialway')
+                WHERE visibility = 'private'
                 AND username = :username
             ) AS has_uncommon_trips;
         """,
@@ -5673,10 +5673,14 @@ def get_trips_api_internal(username, is_public=False):
             base_count_query += " AND " + " AND ".join(additional_conditions)
             base_data_query += " AND " + " AND ".join(additional_conditions)
     else:
-        # Add column-specific conditions
-        if additional_conditions:
-            base_count_query += " WHERE " + " AND ".join(additional_conditions)
-            base_data_query += " WHERE " + " AND ".join(additional_conditions)
+        # Add type filter and column-specific conditions
+        all_conditions = []
+        if filter_types == 1:
+            all_conditions.append("(visibility IS NULL OR visibility != 'private')")
+        all_conditions.extend(additional_conditions)
+        if all_conditions:
+            base_count_query += " WHERE " + " AND ".join(all_conditions)
+            base_data_query += " WHERE " + " AND ".join(all_conditions)
 
     count_query = base_count_query
     
@@ -5941,7 +5945,7 @@ def dynamic_trips(username, time=None):
         username=username,
         privateButtons=True,
         hasPrice=True,
-        hasUncommonTrips=hasUncommonTrips(username),
+        hasPrivateTrips=hasPrivateTrips(username),
         nav="bootstrap/navigation.html",
         isCurrent=has_current_trip(get_user_id(username)),
         isPublic=False,
@@ -5967,7 +5971,7 @@ def public_trips(username, time=None):
         username=username,
         privateButtons=True,
         hasPrice=True,
-        hasUncommonTrips=hasUncommonTrips(username),
+        hasPrivateTrips=hasPrivateTrips(username),
         nav="bootstrap/public_nav.html",
         isCurrent=has_current_trip(get_user_id(username)),
         isPublic=True,
