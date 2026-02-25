@@ -709,7 +709,7 @@ document.addEventListener('click', e => {
 
 async function doSearch(q) {
   try {
-    const res = await fetch(`${BASE}/api/wagons/search?q=${encodeURIComponent(q)}&limit=20`);
+    const res = await fetch(`${BASE}/api/wagons/search?q=${encodeURIComponent(q)}&limit=100`);
     acItems = await res.json();
     acSelected = -1;
     renderAc();
