@@ -2336,6 +2336,7 @@ def new_flight(username):
 @login_required
 def routing(username):
     trip_data = None
+    from_app = request.args.get('fromApp') == 'true'
     if request.method == 'POST':
         trip_data = request.form.get('trip_data') or request.get_json()
         if isinstance(trip_data, dict):
@@ -2344,6 +2345,7 @@ def routing(username):
         "routing.html",
         username=username,
         trip_data=trip_data,
+        from_app=from_app,
         **lang[session["userinfo"]["lang"]],
         **session["userinfo"],
     )
