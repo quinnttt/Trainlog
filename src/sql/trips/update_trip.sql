@@ -16,6 +16,7 @@ UPDATE trips SET
     last_modified = :last_modified,
     trip_type = :trip_type,
     material_type = :material_type,
+    material_type_advanced = :material_type_advanced,
     seat = :seat,
     reg = :reg,
     waypoints = :waypoints,

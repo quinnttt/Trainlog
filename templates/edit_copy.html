@@ -305,6 +305,8 @@
             <label for="material_type">{{material_type}}</label>
             <input type="text" name="material_type" id="material_type" placeholder="{{material_type}}"
                 value="{{tripMaterialType}}">
+            <input type="hidden" name="material_type_advanced" id="material_type_advanced"
+                value="{{tripMaterialTypeAdvanced}}">
             {% if tripType in ('train', 'metro', 'tram') and is_alpha %}
             <div id="ts-active-display" style="display:none; margin-bottom:1rem">
                 <div style="display:flex; align-items:center; gap:8px; padding:6px 12px; background:#f3f3f3; font-size:0.875rem">
@@ -1601,23 +1603,27 @@
     return result.join(' + ');
   }
   function updateMaterialTypeDisplay() {
-    var $input = $('#material_type');
+    var $input = $('#material_type_advanced');
     var $display = $('#ts-active-display');
     if (!$display.length) return;
+    var val = $input.val();
     try {
-      var parsed = JSON.parse($input.val());
+      var parsed = JSON.parse(val);
       if (Array.isArray(parsed) && parsed.length > 0) {
         $('#ts-active-label').text(formatTrainset(parsed));
         $display.show();
-        $input.hide();
         return;
       }
     } catch(e) {}
-    $display.hide();
-    $input.show();
+    if (val) {
+      $('#ts-active-label').text(val);
+      $display.show();
+    } else {
+      $display.hide();
+    }
   }
   function clearMaterialTypeJson() {
-    $('#material_type').val('');
+    $('#material_type_advanced').val('');
     updateMaterialTypeDisplay();
   }
   updateMaterialTypeDisplay();
@@ -1636,7 +1642,8 @@
         }
         sets.forEach(function(ts) {
           $('<div class="ts-pick-item"></div>').text(ts.name).on('click', function() {
-            $('#material_type').val(ts.name);
+            $('#material_type_advanced').val(ts.name);
+            updateMaterialTypeDisplay();
             $list.hide();
           }).appendTo($list);
         });

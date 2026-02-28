@@ -268,6 +268,47 @@ def delete_trainset(tid):
     return jsonify({'deleted': tid})
 
 
+@trainset_blueprint.route('/api/trainsets/resolve')
+def resolve_material_type_advanced():
+    """Resolve a material_type_advanced value to enriched units.
+
+    Accepts a `value` query param that is either:
+    - A JSON array of slim units (from "use once") → enriched directly
+    - A trainset name (from "save & use") → looked up by name
+    """
+    username, _ = _session_user()
+    if not username:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    value = request.args.get('value', '').strip()
+    if not value:
+        return jsonify([])
+
+    with pg_session() as pg:
+        # Try JSON array first
+        try:
+            parsed = json.loads(value)
+            if isinstance(parsed, list):
+                slim = [{'name': u['name'], '_side': u.get('_side', 'L')} for u in parsed if 'name' in u]
+                return jsonify(_enrich_units(pg, slim))
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        # Fall back to trainset name lookup
+        result = pg.execute(
+            """
+            SELECT units_json FROM trainsets
+            WHERE name = :name AND (is_admin OR username = :username)
+            """,
+            {"name": value, "username": username},
+        )
+        row = result.fetchone()
+        if not row:
+            return jsonify([])
+        slim_units = json.loads(row['units_json'] or '[]')
+        return jsonify(_enrich_units(pg, slim_units))
+
+
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 def _slim_units(units):

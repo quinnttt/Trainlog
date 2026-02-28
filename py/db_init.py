@@ -185,6 +185,7 @@ def init_main(path):
         ("last_modified", "DATETIME"),
         ("type", "VARCHAR(100) DEFAULT 'train'"),
         ("material_type", "VARCHAR(100)"),
+        ("material_type_advanced", "TEXT"),
         ("seat", "VARCHAR(100)"),
         ("reg", "TEXT"),
         ("waypoints", "TEXT"),

@@ -599,12 +599,15 @@ function processHiddenData(rowIdx, columns){
         }
         if (col.title == "{{material_type}}" && isTrain) {
             var rowData = tableObject.row(rowIdx).data();
+            var rawAdv = rowData.material_type_advanced || '';
             var rawMat = rowData.material_type || '';
-            if (rawMat) {
-                var formatted = _formatTrainsetStr(rawMat);
-                if (_isValidMaterial(rawMat)) {
+            var primary = rawAdv || rawMat;
+            if (primary) {
+                var formatted = _formatTrainsetStr(primary);
+                if (rawAdv && rawMat) formatted += ' <span style="color:#888;font-size:.9em">' + rawMat + '</span>';
+                if (_isValidMaterial(primary)) {
                     var safeName = (rowData.line_name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                    var safeMat  = rawMat.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    var safeMat  = primary.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                     var dateStr  = rowData.start_date || '';
                     formatted += ` <a href="javascript:void(0);" onclick="openCompositionModal('${safeName}','${dateStr}','${safeMat}')" class="text-decoration-none ms-2" title="View Composition"><i class="fas fa-train"></i></a>`;
                 }
@@ -674,7 +677,7 @@ function renderLineName(data, type, row) {
     if (type === 'display') {
         // Only show for trains
         if (typeof TRAIN_TYPES !== 'undefined' && TRAIN_TYPES.includes(row.type)) {
-            var mat      = row.material_type || '';
+            var mat      = row.material_type_advanced || row.material_type || '';
             var dateStr  = row.start_date || '';
             var safeName = (data || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
             var safeMat  = mat.replace(/'/g, "\\'").replace(/"/g, '&quot;');
@@ -841,11 +844,15 @@ function _formatTrainsetStr(mat) {
 }
 
 function renderMaterialType(data, type, row){
+    if (typeof TRAIN_TYPES !== 'undefined' && TRAIN_TYPES.includes(row.type)) {
+        var adv = row.material_type_advanced || '';
+        var mat = row.material_type || '';
+        if (adv && mat) return _formatTrainsetStr(adv) + ' <span style="color:#888;font-size:.9em">' + mat + '</span>';
+        if (adv) return _formatTrainsetStr(adv);
+        return mat;
+    }
     if (!row.material_type) return '';
     if (row.model) return `[[${row.material_type}]] ${row.manufacturer} ${row.model}`;
-    if (typeof TRAIN_TYPES !== 'undefined' && TRAIN_TYPES.includes(row.type)) {
-        return _formatTrainsetStr(row.material_type);
-    }
     return row.material_type;
 }
 

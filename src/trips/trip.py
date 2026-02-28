@@ -28,6 +28,7 @@ class Trip:
         line_name,
         type,
         material_type,
+        material_type_advanced,
         seat,
         reg,
         waypoints,
@@ -60,6 +61,7 @@ class Trip:
         self.line_name = line_name
         self.type = type
         self.material_type = material_type
+        self.material_type_advanced = material_type_advanced
         self.seat = seat
         self.reg = reg
         self.waypoints = waypoints
@@ -106,6 +108,7 @@ class Trip:
             trip["line_name"],
             trip["trip_type"],
             trip["material_type"],
+            trip["material_type_advanced"],
             trip["seat"],
             trip["reg"],
             trip["waypoints"],

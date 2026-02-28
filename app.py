@@ -649,6 +649,8 @@ def saveTripToDb(username, newTrip, newPath, trip_type="train"):
         newTrip["seat"] = ""
     if "material_type" not in newTrip.keys():
         newTrip["material_type"] = ""
+    if "material_type_advanced" not in newTrip.keys():
+        newTrip["material_type_advanced"] = ""
     if "waypoints" not in newTrip.keys():
         newTrip["waypoints"] = ""
     if "notes" not in newTrip.keys():
@@ -707,6 +709,7 @@ def saveTripToDb(username, newTrip, newPath, trip_type="train"):
         type=sanitize_param(trip_type),
         seat=sanitize_param(newTrip["seat"]),
         material_type=sanitize_param(newTrip["material_type"]),
+        material_type_advanced=sanitize_param(newTrip["material_type_advanced"]),
         reg=sanitize_param(newTrip["reg"]),
         waypoints=sanitize_param(newTrip["waypoints"]),
         notes=sanitize_param(newTrip["notes"]),
@@ -4144,6 +4147,7 @@ def get_trip(trip_id):
         type=sanitize_param(trip["type"]),
         seat=sanitize_param(trip["seat"]),
         material_type=sanitize_param(trip["material_type"]),
+        material_type_advanced=sanitize_param(trip.get("material_type_advanced")),
         reg=sanitize_param(trip["reg"]),
         waypoints=sanitize_param(trip["waypoints"]),
         notes=sanitize_param(trip["notes"]),
@@ -4231,6 +4235,7 @@ def update_trip_values_from_form_data(trip_id, formData, update_created_ts=False
         type=original_trip.type,
         seat=sanitize_param(formData["seat"]),
         material_type=sanitize_param(formData["material_type"]),
+        material_type_advanced=sanitize_param(formData.get("material_type_advanced")),
         reg=sanitize_param(formData["reg"]),
         waypoints=sanitize_param(formData.get("waypoints", original_trip.waypoints)),
         notes=sanitize_param(formData["notes"]),
@@ -5460,6 +5465,7 @@ def mergeTrips(username, tripIds):
     newTrip["reg"] = ""
     newTrip["seat"] = ""
     newTrip["material_type"] = ""
+    newTrip["material_type_advanced"] = ""
     newTrip["waypoints"] = ""
     newTrip["notes"] = ""
     newTrip["onlyDateDuration"] = ""
@@ -6016,6 +6022,7 @@ def edit_copy_trip(username, tripId, edit_copy_type):
     tripLineName = trip["line_name"]
     tripVisibility = trip["visibility"]
     tripMaterialType = trip["material_type"]
+    tripMaterialTypeAdvanced = trip["material_type_advanced"] if trip["material_type_advanced"] else ""
     tripSeat = trip["seat"]
     tripReg = trip["reg"]
     tripType = trip["type"]
@@ -6081,6 +6088,7 @@ def edit_copy_trip(username, tripId, edit_copy_type):
         tripLineName=tripLineName or "",
         tripVisibility=tripVisibility or "",
         tripMaterialType=tripMaterialType or "",
+        tripMaterialTypeAdvanced=tripMaterialTypeAdvanced or "",
         tripSeat=tripSeat or "",
         tripReg=tripReg or "",
         tripPrice=tripPrice or "",
@@ -6396,6 +6404,7 @@ def processMFR24(username):
             trip.last_modified = now
             trip.seat = sanitize_param(newTrip["seat"])
             trip.material_type = sanitize_param(newTrip["material_type"])
+            trip.material_type_advanced = sanitize_param(newTrip.get("material_type_advanced"))
             trip.reg = sanitize_param(newTrip["reg"])
             trip.waypoints = None
             trip.notes = sanitize_param(newTrip["notes"])
@@ -6430,6 +6439,7 @@ def processMFR24(username):
                 type="air",
                 seat=sanitize_param(newTrip["seat"]),
                 material_type=sanitize_param(newTrip["material_type"]),
+                material_type_advanced=sanitize_param(newTrip.get("material_type_advanced")),
                 reg=sanitize_param(newTrip["reg"]),
                 waypoints=None,
                 notes=sanitize_param(newTrip["notes"]),
@@ -6742,6 +6752,7 @@ def importAll(username):
         line_name=sanitize_param(dataDict["line_name"]),
         type=sanitize_param(dataDict["type"]),
         material_type=sanitize_param(dataDict["material_type"]),
+        material_type_advanced=sanitize_param(dataDict.get("material_type_advanced")),
         seat=sanitize_param(dataDict["seat"]),
         reg=sanitize_param(dataDict["reg"]),
         waypoints=sanitize_param(dataDict["waypoints"]),
