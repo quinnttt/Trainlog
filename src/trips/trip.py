@@ -41,6 +41,8 @@ class Trip:
         is_project,
         trip_id=None,
         visibility=None,
+        departure_delay=None,
+        arrival_delay=None,
     ):
         self.trip_id = trip_id
         self.username = username
@@ -71,6 +73,8 @@ class Trip:
         self.purchasing_date = purchasing_date
         self.ticket_id = ticket_id
         self.is_project = is_project
+        self.departure_delay = departure_delay
+        self.arrival_delay = arrival_delay
         self.path = path
         self.carbon = (
             calculate_carbon_footprint_for_trip(vars(self), path) if path else None
@@ -121,6 +125,8 @@ class Trip:
             trip["is_project"],
             trip["trip_id"],
             trip["visibility"],
+            trip["departure_delay"],
+            trip["arrival_delay"],
         )
 
     def _json_safe(self, value):

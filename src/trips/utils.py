@@ -153,6 +153,8 @@ def compare_trip(trip_id: int):
         ensure_values_equal(sqlite_trip, pg_trip, "currency")
         ensure_values_equal(sqlite_trip, pg_trip, "ticket_id")
         ensure_values_equal(sqlite_trip, pg_trip, "purchase_date")
+        ensure_values_equal(sqlite_trip, pg_trip, "departure_delay")
+        ensure_values_equal(sqlite_trip, pg_trip, "arrival_delay")
     except Exception as e:
         logger.exception(e)
         trace = traceback.format_exc().replace("\n", "<br>")

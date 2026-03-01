@@ -329,6 +329,18 @@
             <input type="text" name="seat" id="seat" placeholder="{{seat}}" value="{{tripSeat}}">
             <label for="notes">{{notes}}</label>
             <input type="text" name="notes" id="notes" placeholder="{{notes}}" value="{{tripNotes}}">
+
+            {% if is_alpha %}
+            <fieldset class="fieldset-time">
+                <legend><span class="legend">{{delays}}</span></legend>
+                <label class="sr-only" for="departureDelayMinutes">{{departureDelay}}</label>
+                <input type="number" step="1" id="departureDelayMinutes" name="departureDelayMinutes"
+                    value="{{tripDepartureDelay}}" placeholder="{{departure}}" />
+                <label class="sr-only" for="arrivalDelayMinutes">{{arrivalDelay}}</label>
+                <input type="number" step="1" id="arrivalDelayMinutes" name="arrivalDelayMinutes"
+                    value="{{tripArrivalDelay}}" placeholder="{{arrival}}" />
+            </fieldset>
+            {% endif %}
         </fieldset>
 
         <!-- Price Details Subgroup -->

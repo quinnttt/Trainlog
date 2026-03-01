@@ -195,6 +195,8 @@ def init_main(path):
         ("currency", "TEXT"),
         ("purchasing_date", "DATETIME"),
         ("visibility", "TEXT"),
+        ("departure_delay", "INTEGER"),
+        ("arrival_delay", "INTEGER"),
     ]
     manual_stations_columns = [
         ("uid", "INTEGER NOT NULL UNIQUE"),

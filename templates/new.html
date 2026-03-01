@@ -102,6 +102,16 @@
         <label for="notes" class="sr-only">{{notes}}</label>
         <input type="text" name="notes" id="notes" placeholder="{{notes}}">
 
+        {% if is_alpha %}
+        <fieldset class="fieldset-time non_poi">
+          <legend><span class="legend">{{delays}}</span></legend>
+          <label class="sr-only" for="departureDelayMinutes">{{departureDelay}}</label>
+          <input type="number" step="1" id="departureDelayMinutes" name="departureDelayMinutes" placeholder="{{departure}}"/>
+          <label class="sr-only" for="arrivalDelayMinutes">{{arrivalDelay}}</label>
+          <input type="number" step="1" id="arrivalDelayMinutes" name="arrivalDelayMinutes" placeholder="{{arrival}}"/>
+        </fieldset>
+        {% endif %}
+
         <!-- Price Details Subgroup -->
         <fieldset class="fieldset-fixed fieldset-price">
           <legend>
@@ -201,12 +211,12 @@
             <span class="legend">{{tripDuration}}</span>
           </legend>
           <label class="sr-only" for="manDurationHours">{{hours}}</label>
-          <input type="number" min=0 max=200 step="1" id="manDurationHours" name="manDurationHours" placeholder="{{hours}}"/> 
+          <input type="number" min=0 max=200 step="1" id="manDurationHours" name="manDurationHours" placeholder="{{hours}}"/>
           <label class="sr-only" for="manDurationMinutes">{{minutes}}</label>
-          <input type="number" min=0 max=59 step="1" id="manDurationMinutes" name="manDurationMinutes" placeholder="{{minutes}}"/> 
+          <input type="number" min=0 max=59 step="1" id="manDurationMinutes" name="manDurationMinutes" placeholder="{{minutes}}"/>
         </fieldset>
       </group>
-      
+
       <group id="dates">
         <fieldset class="fieldset-datetime">
           <legend>

@@ -51,6 +51,8 @@ def create_trip(trip: Trip, pg_session=None):
                 "purchase_date": trip.purchasing_date,
                 "carbon": trip.carbon,
                 "visibility": trip.visibility,
+                "departure_delay": trip.departure_delay,
+                "arrival_delay": trip.arrival_delay,
             },
         )
 
@@ -90,9 +92,11 @@ def _create_trip_in_sqlite(trip: Trip):
                         'currency',
                         'purchasing_date',
                         'ticket_id',
-                        'visibility')
+                        'visibility',
+                        'departure_delay',
+                        'arrival_delay')
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING uid; \
+                            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING uid; \
                     """
     if trip.start_datetime is None:
         start_datetime = 1 if trip.is_project else -1
@@ -137,6 +141,8 @@ def _create_trip_in_sqlite(trip: Trip):
                     trip.purchasing_date,
                     trip.ticket_id,
                     trip.visibility,
+                    trip.departure_delay,
+                    trip.arrival_delay,
                 ),
             )
             # Retrieve the trip_id directly from the INSERT statement

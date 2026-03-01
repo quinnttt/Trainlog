@@ -746,6 +746,28 @@ function renderDuration(data, type, row) {
     return data;
 }
 
+function renderDelayBadge(delaySecs) {
+    if (delaySecs === null || delaySecs === undefined || delaySecs === '') return '';
+    const minutes = Math.round(delaySecs / 60);
+    const sign = minutes > 0 ? '+' : '';
+    const cls = minutes > 0 ? 'delay-late' : minutes < 0 ? 'delay-early' : 'delay-ontime';
+    return ` <span class="delay-badge ${cls}">${sign}${minutes}'</span>`;
+}
+
+function renderStartTime(data, type, row) {
+    if (type === 'display') {
+        return data + renderDelayBadge(row.departure_delay);
+    }
+    return data;
+}
+
+function renderEndTime(data, type, row) {
+    if (type === 'display') {
+        return data + renderDelayBadge(row.arrival_delay);
+    }
+    return data;
+}
+
 function renderLineName(data, type, row) {
     if (type === 'display') {
         // Only show for trains
@@ -1027,8 +1049,8 @@ var table = $('#tripRows');
         { data: 'origin_station', render: renderStation },
         { data: 'destination_station', render: renderStation },
         { data: 'start_date' },
-        { data: 'start_time' },
-        { data: 'end_time' },
+        { data: 'start_time', render: renderStartTime },
+        { data: 'end_time', render: renderEndTime },
         { data: 'trip_duration', render: renderDuration },
         { data: 'trip_length', render: renderLength },
         {

@@ -719,7 +719,9 @@ def saveTripToDb(username, newTrip, newPath, trip_type="train"):
         ticket_id=sanitize_param(newTrip["ticket_id"]),
         is_project=start_datetime == 1 or end_datetime == 1,
         path=newPath,
-        visibility=sanitize_param(newTrip.get("visibility", get_default_trip_visibility(trip_type)))
+        visibility=sanitize_param(newTrip.get("visibility", get_default_trip_visibility(trip_type))),
+        departure_delay=sanitize_param(newTrip.get("departure_delay")),
+        arrival_delay=sanitize_param(newTrip.get("arrival_delay")),
     )
 
     create_trip(trip)
@@ -4157,6 +4159,8 @@ def get_trip(trip_id):
         ticket_id=sanitize_param(trip["ticket_id"]),
         is_project=trip["start_datetime"] == 1 or trip["end_datetime"] == 1,
         path=path,
+        departure_delay=trip.get("departure_delay"),
+        arrival_delay=trip.get("arrival_delay"),
     )
 
 
@@ -4249,7 +4253,9 @@ def update_trip_values_from_form_data(trip_id, formData, update_created_ts=False
         ticket_id=sanitize_param(formData.get("ticket_id")),
         is_project=start_datetime == 1 or end_datetime == 1,
         path=path,
-        visibility=visibility if visibility != "" else None
+        visibility=visibility if visibility != "" else None,
+        departure_delay=sanitize_param(formData.get("departure_delay")),
+        arrival_delay=sanitize_param(formData.get("arrival_delay")),
     )
 
     return trip
@@ -6066,6 +6072,8 @@ def edit_copy_trip(username, tripId, edit_copy_type):
         tripHours = lang[session["userinfo"]["lang"]]["hours"]
         tripMinutes = lang[session["userinfo"]["lang"]]["minutes"]
 
+    tripDepartureDelay = int(trip["departure_delay"] / 60) if trip["departure_delay"] is not None else ""
+    tripArrivalDelay = int(trip["arrival_delay"] / 60) if trip["arrival_delay"] is not None else ""
     return render_template(
         "edit_copy.html",
         title=lang[session["userinfo"]["lang"]][edit_copy_type],
@@ -6098,6 +6106,8 @@ def edit_copy_trip(username, tripId, edit_copy_type):
         tripTicketId=tripTicketId or "",
         wplist=wplist,
         tripNotes=tripNotes or "",
+        tripDepartureDelay=tripDepartureDelay,
+        tripArrivalDelay=tripArrivalDelay,
         **lang[session["userinfo"]["lang"]],
         **session["userinfo"],
     )
@@ -6449,6 +6459,8 @@ def processMFR24(username):
                 ticket_id=None,
                 is_project=options["start_datetime"] == 1 or end_datetime == 1,
                 path=newPath,
+                departure_delay=sanitize_param(newTrip.get("departure_delay")),
+                arrival_delay=sanitize_param(newTrip.get("arrival_delay")),
             )
             create_trip(trip)
 
@@ -6764,6 +6776,8 @@ def importAll(username):
         is_project=dataDict["start_datetime"] == 1 or dataDict["end_datetime"] == 1,
         visibility=visibility,
         path=path,
+        departure_delay=sanitize_param(dataDict.get("departure_delay")),
+        arrival_delay=sanitize_param(dataDict.get("arrival_delay")),
     )
 
     try:
