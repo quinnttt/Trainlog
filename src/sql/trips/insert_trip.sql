@@ -28,7 +28,9 @@ INSERT INTO trips (
     ticket_id,
     purchase_date,
     carbon,
-    visibility
+    visibility,
+    departure_delay,
+    arrival_delay
 )
 VALUES (
     :trip_id,
@@ -60,6 +62,8 @@ VALUES (
     :ticket_id,
     :purchase_date,
     :carbon,
-    :visibility
+    :visibility,
+    :departure_delay,
+    :arrival_delay
 )
 RETURNING trip_id

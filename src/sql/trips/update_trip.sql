@@ -26,5 +26,7 @@ UPDATE trips SET
     ticket_id = :ticket_id,
     purchase_date = :purchase_date,
     carbon = :carbon,
-    visibility = :visibility
+    visibility = :visibility,
+    departure_delay = :departure_delay,
+    arrival_delay = :arrival_delay
 WHERE trip_id = :trip_id
