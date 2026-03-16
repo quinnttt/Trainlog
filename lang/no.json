@@ -887,5 +887,8 @@
     "allTime": "alltid",
     "inXDays": "om {n} dager",
     "inXHours": "om {n} timer",
-    "soon": "snart"
+    "soon": "snart",
+    "moneySpent": "Utgifter",
+    "co2Emissions": "CO₂-utslipp",
+    "total": "Total"
 }

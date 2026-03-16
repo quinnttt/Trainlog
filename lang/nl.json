@@ -887,5 +887,8 @@
     "allTime": "alle tijden",
     "inXDays": "over {n} dagen",
     "inXHours": "over {n} uur",
-    "soon": "binnenkort"
+    "soon": "binnenkort",
+    "moneySpent": "Uitgaven",
+    "co2Emissions": "CO₂-uitstoot",
+    "total": "Totaal"
 }

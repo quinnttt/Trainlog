@@ -223,6 +223,13 @@
   .stat-label { font-size: 0.85rem; color: #374151; }
   .stat-value { font-weight: 600; font-size: 0.95rem; color: #111827; }
   .stat-sub  { font-size: 0.75rem; color: var(--text-muted); }
+  .bar-row { padding: 0.4rem 0; border-bottom: 1px solid #f8fafc; }
+  .bar-row:last-child { border-bottom: none; }
+  .bar-row-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.2rem; }
+  .bar-row-label { font-size: 0.82rem; color: #374151; display: flex; align-items: center; gap: 0.35rem; }
+  .bar-row-value { font-weight: 600; font-size: 0.88rem; color: #111827; white-space: nowrap; }
+  .bar-row-track { height: 5px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+  .bar-row-fill  { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
   .change-up   { color: #059669; font-size: 0.75rem; margin-left: 0.3rem; }
   .change-down { color: #dc2626; font-size: 0.75rem; margin-left: 0.3rem; }
 
@@ -506,13 +513,17 @@
     <!-- Current trip (hidden until active) -->
     <div class="current-trip-card" id="current-trip-card">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem;">
-        <div>
-          <div style="font-size:0.7rem; opacity:0.7; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.2rem;">
-            <span class="live-dot"></span>{{ onTrip }}
+        <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+          <div id="ct-icon" style="font-size:1.5rem; opacity:0.85; margin-top:0.1rem;"></div>
+          <div>
+            <div style="font-size:0.7rem; opacity:0.7; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.2rem;">
+              <span class="live-dot"></span>{{ onTrip }}
+            </div>
+            <div class="current-trip-route" id="ct-route">—</div>
+            <div class="current-trip-meta" id="ct-meta"></div>
           </div>
-          <div class="current-trip-route" id="ct-route">—</div>
-          <div class="current-trip-meta" id="ct-meta"></div>
         </div>
+        <div id="ct-pct" style="font-size:1rem; font-weight:700; opacity:0.85; white-space:nowrap; padding-top:0.2rem;"></div>
       </div>
       <div class="progress-track">
         <div class="progress-fill" id="ct-progress" style="width:0%"></div>
@@ -607,6 +618,30 @@
         <div class="dash-card">
           <div class="dash-card-header"><i class="bi bi-lightning-charge"></i>{{ records }}<span id="records-scope-label" style="margin-left:auto; font-weight:400; color:var(--text-muted); text-transform:none; letter-spacing:0; font-size:0.78rem;"></span></div>
           <div class="dash-card-body" id="records-body">
+            <div class="skeleton skeleton-line medium"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line medium"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 4: Money + CO2 -->
+    <div class="row dash-row g-3">
+      <div class="col-md-6">
+        <div class="dash-card">
+          <div class="dash-card-header"><i class="bi bi-cash-coin"></i>{{ moneySpent }}<span id="money-scope-label" style="margin-left:auto; font-weight:400; color:var(--text-muted); text-transform:none; letter-spacing:0; font-size:0.78rem;"></span></div>
+          <div class="dash-card-body" id="money-body">
+            <div class="skeleton skeleton-line medium"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line medium"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="dash-card">
+          <div class="dash-card-header"><i class="bi bi-cloud-haze2"></i>{{ co2Emissions }}<span id="co2-scope-label" style="margin-left:auto; font-weight:400; color:var(--text-muted); text-transform:none; letter-spacing:0; font-size:0.78rem;"></span></div>
+          <div class="dash-card-body" id="co2-body">
             <div class="skeleton skeleton-line medium"></div>
             <div class="skeleton skeleton-line short"></div>
             <div class="skeleton skeleton-line medium"></div>
@@ -761,24 +796,57 @@ fetch(`/u/${username}/dashboard_totals`)
 
 // ─── Current trip ─────────────────────────────────────────────────────────────
 
+let _currentTrip = null;
+
+function _updateCurrentTripProgress() {
+  if (!_currentTrip) return;
+  const trip = _currentTrip;
+  // Parse UTC datetimes (server sends ISO strings or "YYYY-MM-DD HH:MM:SS" in UTC)
+  const parseUTC = s => {
+    if (!s) return null;
+    // Ensure it's treated as UTC even without Z suffix
+    return new Date(s.includes("T") || s.endsWith("Z") ? s : s.replace(" ", "T") + "Z");
+  };
+  const depDelay = (trip.departure_delay || 0) * 1000; // ms
+  const arrDelay = (trip.arrival_delay  || 0) * 1000;
+  const rawStart = parseUTC(trip.utc_start_datetime || trip.start_datetime);
+  const rawEnd   = parseUTC(trip.utc_end_datetime   || trip.end_datetime);
+  if (!rawStart || !rawEnd) return;
+  const actualStart = new Date(rawStart.getTime() + depDelay);
+  const actualEnd   = new Date(rawEnd.getTime()   + arrDelay);
+  const now   = new Date();
+  const total   = actualEnd - actualStart;
+  const elapsed = now - actualStart;
+  const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
+  document.getElementById("ct-progress").style.width = pct.toFixed(1) + "%";
+  document.getElementById("ct-pct").textContent = Math.round(pct) + "%";
+
+  // Show actual departure/arrival times in local timezone, with delay indicator
+  const fmtActual = (base, delayMs) => {
+    const d = new Date(base.getTime() + delayMs);
+    const t = d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+    const delayMin = Math.round(delayMs / 60000);
+    return delayMin > 0 ? `${t} <span style="color:#f87171;font-size:0.75rem;">+${delayMin}'</span>`
+         : delayMin < 0 ? `${t} <span style="color:#4ade80;font-size:0.75rem;">${delayMin}'</span>`
+         : t;
+  };
+  document.getElementById("ct-start").innerHTML = fmtActual(rawStart, depDelay);
+  document.getElementById("ct-end").innerHTML   = fmtActual(rawEnd,   arrDelay);
+}
+
 fetch(`/u/${username}/getCurrentTrip`)
   .then(r => r.json())
   .then(data => {
     if (!data || !data.length) return;
-    const trip = data[0].trip;
-    const start = new Date(trip.utc_start_datetime || trip.start_datetime);
-    const end   = new Date(trip.utc_end_datetime   || trip.end_datetime);
-    const now   = new Date();
-    const total = end - start;
-    const elapsed = now - start;
-    const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
-
+    _currentTrip = data[0].trip;
+    const trip = _currentTrip;
+    document.getElementById("ct-icon").innerHTML = `<i class="${tripIcon(trip.type || trip.trip_type)}"></i>`;
     document.getElementById("ct-route").textContent = `${trip.origin_station} → ${trip.destination_station}`;
     document.getElementById("ct-meta").textContent = [trip.operator, trip.line_name].filter(Boolean).join(" · ");
-    document.getElementById("ct-progress").style.width = pct + "%";
-    document.getElementById("ct-start").textContent = fmtTime(trip.start_datetime);
-    document.getElementById("ct-end").textContent   = fmtTime(trip.end_datetime);
     document.getElementById("current-trip-card").style.display = "block";
+    _updateCurrentTripProgress();
+    // Refresh progress every 30 seconds
+    setInterval(_updateCurrentTripProgress, 30000);
   })
   .catch(() => {});
 
@@ -801,7 +869,8 @@ fetch(`/u/${username}/dashboard_trips`)
     // Recent (show today's trips first if any, then last 3 past)
     const recEl = document.getElementById("recent-body");
     const todayItems = (d.today || []).map(t => {
-      const badge = `<span class="countdown-badge" style="background:#f0fdf4;color:#059669;">{{ today }}</span>`;
+      const badge = `<span class="countdown-badge" style="background:#f0fdf4;color:#059669;">{{ today }}</span>`
+        + (t.km ? `<div class="trip-km">${t.km} km</div>` : "");
       return tripItem(t, badge);
     });
     const pastItems = (d.recent || []).map(t => {
@@ -887,10 +956,53 @@ function renderRecords(d, scope) {
   document.getElementById("records-body").innerHTML = rows.length ? rows.join("") : emptyState("{{ noDataYet }}");
 }
 
+const TYPE_ORDER = ["train","tram","metro","bus","air","ferry","car","walk","cycle","helicopter","aerialway"];
+const TYPE_LABELS = {"train":"{{ train }}","tram":"{{ tram }}","metro":"{{ metro }}","bus":"{{ bus }}","air":"{{ air }}","ferry":"{{ ferry }}","car":"{{ car }}","walk":"{{ walk }}","cycle":"{{ cycle }}","helicopter":"{{ helicopter }}","aerialway":"{{ aerialway }}"};
+
+function barRow(label, value, pct, color) {
+  return `<div class="bar-row">
+    <div class="bar-row-header">
+      <span class="bar-row-label">${label}</span>
+      <span class="bar-row-value">${value}</span>
+    </div>
+    <div class="bar-row-track"><div class="bar-row-fill" style="width:${pct.toFixed(1)}%;background:${color};"></div></div>
+  </div>`;
+}
+
+function renderMoney(d, scope) {
+  const m = scope === "alltime" ? d.money_alltime : d.money_ytd;
+  if (!m || !m.total) { document.getElementById("money-body").innerHTML = emptyState("{{ noDataYet }}"); return; }
+  const cur = m.currency || "";
+  const fmtM = v => v != null ? v.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0}) : "—";
+  const sorted = Object.entries(m.by_type || {}).filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]);
+  const rows = [statRow("{{ total }}", `${fmtM(m.total)} ${cur}`, "&nbsp;")];
+  sorted.forEach(([t, v]) => {
+    const pct = m.total > 0 ? (v / m.total) * 100 : 0;
+    rows.push(barRow(`<i class="${tripIcon(t)}" style="width:14px;text-align:center;"></i> ${TYPE_LABELS[t]||t}`,
+      `${fmtM(v)} ${cur}`, pct, "var(--info-color)"));
+  });
+  document.getElementById("money-body").innerHTML = rows.join("");
+}
+
+function renderCO2(d, scope) {
+  const c = scope === "alltime" ? d.co2_alltime : d.co2_ytd;
+  if (!c || !c.total) { document.getElementById("co2-body").innerHTML = emptyState("{{ noDataYet }}"); return; }
+  const fmtKg = v => v >= 1000 ? `${(v/1000).toFixed(1)} t` : `${Math.round(v)} kg`;
+  const sorted = Object.entries(c.by_type || {}).filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]);
+  const rows = [statRow("{{ total }}", fmtKg(c.total), "CO₂e")];
+  sorted.forEach(([t, v]) => {
+    const pct = c.total > 0 ? (v / c.total) * 100 : 0;
+    rows.push(barRow(`<i class="${tripIcon(t)}" style="width:14px;text-align:center;"></i> ${TYPE_LABELS[t]||t}`,
+      fmtKg(v), pct, "#10b981"));
+  });
+  document.getElementById("co2-body").innerHTML = rows.join("");
+}
+
 function updateScopeLabels(scope, year) {
   const lbl = scope === "alltime" ? "{{ allTime }}" : String(year);
-  document.getElementById("highlights-scope-label").textContent = lbl;
-  document.getElementById("records-scope-label").textContent = lbl;
+  ["highlights-scope-label","records-scope-label","money-scope-label","co2-scope-label"].forEach(id => {
+    document.getElementById(id).textContent = lbl;
+  });
 }
 
 function applyHlData(d) {
@@ -898,12 +1010,14 @@ function applyHlData(d) {
   renderYearCard(d);
   renderHighlights(d, _hlScope);
   renderRecords(d, _hlScope);
+  renderMoney(d, _hlScope);
+  renderCO2(d, _hlScope);
   updateScopeLabels(_hlScope, d.year);
 }
 
 function fetchYearData(year) {
   const skel = `<div class="skeleton skeleton-line medium"></div><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line medium"></div>`;
-  ["year-body", "highlights-body", "records-body"].forEach(id => {
+  ["year-body", "highlights-body", "records-body", "money-body", "co2-body"].forEach(id => {
     document.getElementById(id).innerHTML = skel;
   });
   fetch(`/u/${username}/dashboard_year?year=${year}`)
@@ -942,7 +1056,7 @@ document.getElementById("hl-scope-toggle").addEventListener("click", e => {
   document.querySelectorAll("#hl-scope-toggle button.rank-metric-btn").forEach(b => b.classList.remove("active"));
   document.getElementById("hl-year-select").classList.remove("active");
   btn.classList.add("active");
-  if (_hlData) { renderHighlights(_hlData, _hlScope); renderRecords(_hlData, _hlScope); updateScopeLabels(_hlScope, _hlYear); }
+  if (_hlData) { renderHighlights(_hlData, _hlScope); renderRecords(_hlData, _hlScope); renderMoney(_hlData, _hlScope); renderCO2(_hlData, _hlScope); updateScopeLabels(_hlScope, _hlYear); }
 });
 
 // Year dropdown change

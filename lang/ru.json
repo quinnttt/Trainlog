@@ -887,5 +887,8 @@
     "allTime": "все время",
     "inXDays": "через {n} дней",
     "inXHours": "через {n} часов",
-    "soon": "скоро"
+    "soon": "скоро",
+    "moneySpent": "Расходы",
+    "co2Emissions": "Выбросы CO₂",
+    "total": "Итого"
 }

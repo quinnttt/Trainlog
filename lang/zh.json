@@ -887,5 +887,8 @@
     "allTime": "所有时间",
     "inXDays": "在{n}天内",
     "inXHours": "在{n}小时内",
-    "soon": "很快"
+    "soon": "很快",
+    "moneySpent": "支出",
+    "co2Emissions": "CO₂排放",
+    "total": "总计"
 }

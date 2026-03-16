@@ -8,7 +8,8 @@ from src.api.leaderboards import _getLeaderboardUsers
 from src.api.wrapped import get_wrapped_data
 from src.pg import pg_session
 from src.users import Friendship, User
-from src.utils import get_user_id, login_required
+from src.utils import get_user_id, login_required, mainConn, managed_cursor
+from py.currency import get_exchange_rate
 
 logger = logging.getLogger(__name__)
 
@@ -147,8 +148,9 @@ def dashboard_trips(username):
             WHERE user_id = :uid
               AND is_project = false
               AND COALESCE(utc_start_datetime, start_datetime) < NOW()
+              AND DATE(COALESCE(utc_start_datetime, start_datetime)) < CURRENT_DATE
             ORDER BY COALESCE(utc_start_datetime, start_datetime) DESC
-            LIMIT 3
+            LIMIT 5
             """,
             {"uid": user_id},
         ).fetchall()
@@ -335,7 +337,10 @@ def dashboard_year(username):
     except (ValueError, TypeError):
         selected_year = current_year
 
-    cache_key = f"dashboard_year:{username}:{selected_year}"
+    user_obj = User.query.filter_by(username=username).first()
+    user_currency = user_obj.user_currency if user_obj else "EUR"
+
+    cache_key = f"dashboard_year:{username}:{selected_year}:{user_currency}"
     cached = _cache_get(cache_key)
     if cached is not None:
         return jsonify(cached)
@@ -604,6 +609,156 @@ def dashboard_year(username):
             p,
         ).fetchone()
 
+        # ── CO2 ───────────────────────────────────────────────────────────────
+        co2_alltime_rows = pg.execute(
+            """
+            SELECT trip_type, COALESCE(SUM(carbon), 0) AS kg
+            FROM trips
+            WHERE user_id = :uid AND NOT is_project
+              AND carbon IS NOT NULL
+              AND COALESCE(utc_start_datetime, start_datetime) < NOW()
+            GROUP BY trip_type
+            """,
+            p,
+        ).fetchall()
+
+        co2_ytd_rows = pg.execute(
+            """
+            SELECT trip_type, COALESCE(SUM(carbon), 0) AS kg
+            FROM trips
+            WHERE user_id = :uid AND NOT is_project
+              AND carbon IS NOT NULL
+              AND EXTRACT(YEAR FROM COALESCE(utc_start_datetime, start_datetime)) = :yr
+              AND COALESCE(utc_start_datetime, start_datetime) <= :cutoff
+            GROUP BY trip_type
+            """,
+            p,
+        ).fetchall()
+
+        # ── Money – individual prices per currency × type ─────────────────────
+        money_ind_alltime_rows = pg.execute(
+            """
+            SELECT trip_type, currency, COALESCE(SUM(price), 0) AS total
+            FROM trips
+            WHERE user_id = :uid AND NOT is_project
+              AND price IS NOT NULL AND price > 0
+              AND currency IS NOT NULL
+              AND COALESCE(utc_start_datetime, start_datetime) < NOW()
+            GROUP BY trip_type, currency
+            """,
+            p,
+        ).fetchall()
+
+        money_ind_ytd_rows = pg.execute(
+            """
+            SELECT trip_type, currency, COALESCE(SUM(price), 0) AS total
+            FROM trips
+            WHERE user_id = :uid AND NOT is_project
+              AND price IS NOT NULL AND price > 0
+              AND currency IS NOT NULL
+              AND EXTRACT(YEAR FROM COALESCE(utc_start_datetime, start_datetime)) = :yr
+              AND COALESCE(utc_start_datetime, start_datetime) <= :cutoff
+            GROUP BY trip_type, currency
+            """,
+            p,
+        ).fetchall()
+
+        # Ticket usage by trip_type — all time (denominator for proportional split)
+        ticket_by_type_total_rows = pg.execute(
+            """
+            SELECT ticket_id, trip_type, COUNT(*) AS cnt
+            FROM trips
+            WHERE user_id = :uid AND NOT is_project AND ticket_id IS NOT NULL
+            GROUP BY ticket_id, trip_type
+            """,
+            p,
+        ).fetchall()
+
+        # Ticket usage by trip_type — selected year
+        ticket_by_type_ytd_rows = pg.execute(
+            """
+            SELECT ticket_id, trip_type, COUNT(*) AS cnt
+            FROM trips
+            WHERE user_id = :uid AND NOT is_project AND ticket_id IS NOT NULL
+              AND EXTRACT(YEAR FROM COALESCE(utc_start_datetime, start_datetime)) = :yr
+              AND COALESCE(utc_start_datetime, start_datetime) <= :cutoff
+            GROUP BY ticket_id, trip_type
+            """,
+            p,
+        ).fetchall()
+
+    # ── Resolve user currency (fetched before cache check above) ─────────────
+    today = date.today()
+
+    def _to_user_currency(amount, currency):
+        if not amount or not currency:
+            return 0.0
+        try:
+            converted = get_exchange_rate(float(amount), currency, user_currency, today)
+            return float(converted) if converted is not None else 0.0
+        except Exception:
+            return 0.0
+
+    # ── Ticket shares from SQLite, split by trip_type ─────────────────────────
+    # Build lookup: {ticket_id: {trip_type: cnt}} for total and ytd
+    def _group_ticket_rows(rows):
+        d = {}
+        for r in rows:
+            d.setdefault(r.ticket_id, {})[r.trip_type] = r.cnt
+        return d
+
+    ticket_total_by_type = _group_ticket_rows(ticket_by_type_total_rows)
+    ticket_ytd_by_type   = _group_ticket_rows(ticket_by_type_ytd_rows)
+
+    # {trip_type: amount} for alltime and ytd ticket shares
+    ticket_shares_alltime_by_type = {}
+    ticket_shares_ytd_by_type     = {}
+
+    all_ticket_ids = list(ticket_total_by_type.keys())
+    if all_ticket_ids:
+        placeholders = ",".join("?" * len(all_ticket_ids))
+        with managed_cursor(mainConn) as cur:
+            cur.execute(
+                f"SELECT uid, price, currency FROM tickets WHERE uid IN ({placeholders})",
+                all_ticket_ids,
+            )
+            for row in cur.fetchall():
+                tid, tprice, tcurrency = row["uid"], row["price"], row["currency"]
+                type_counts_total = ticket_total_by_type.get(tid, {})
+                type_counts_ytd   = ticket_ytd_by_type.get(tid, {})
+                total_trips = sum(type_counts_total.values()) or 1
+                converted_price = _to_user_currency(tprice, tcurrency)
+                per_trip = converted_price / total_trips
+                for ttype, cnt in type_counts_total.items():
+                    ticket_shares_alltime_by_type[ttype] = (
+                        ticket_shares_alltime_by_type.get(ttype, 0.0) + per_trip * cnt
+                    )
+                for ttype, cnt in type_counts_ytd.items():
+                    ticket_shares_ytd_by_type[ttype] = (
+                        ticket_shares_ytd_by_type.get(ttype, 0.0) + per_trip * cnt
+                    )
+
+    # ── Build money totals ────────────────────────────────────────────────────
+    def _build_money(rows, ticket_by_type):
+        by_type = {}
+        for r in rows:
+            converted = _to_user_currency(r.total, r.currency)
+            by_type[r.trip_type] = by_type.get(r.trip_type, 0.0) + converted
+        # Merge ticket shares into by_type
+        for ttype, share in ticket_by_type.items():
+            by_type[ttype] = by_type.get(ttype, 0.0) + share
+        grand_total = sum(by_type.values())
+        return {"total": round(grand_total, 2), "by_type": {k: round(v, 2) for k, v in by_type.items()}, "currency": user_currency}
+
+    # ── Build CO2 totals ──────────────────────────────────────────────────────
+    def _build_co2(rows):
+        by_type = {}
+        total = 0.0
+        for r in rows:
+            by_type[r.trip_type] = round(float(r.kg), 1)
+            total += float(r.kg)
+        return {"total": round(total, 1), "by_type": by_type}
+
     trips_change = pct_change(
         int(ytd_row.this_ytd_trips or 0), int(ytd_row.prev_ytd_trips or 0)
     )
@@ -663,6 +818,12 @@ def dashboard_year(username):
             "trips": round(float(percentile_row.trips_percentile), 2),
             "total_users": int(percentile_row.total_users),
         } if percentile_row and percentile_row.total_users > 1 else None,
+        # Money
+        "money_alltime": _build_money(money_ind_alltime_rows, ticket_shares_alltime_by_type),
+        "money_ytd":     _build_money(money_ind_ytd_rows, ticket_shares_ytd_by_type),
+        # CO2
+        "co2_alltime": _build_co2(co2_alltime_rows),
+        "co2_ytd":     _build_co2(co2_ytd_rows),
     }
 
     _cache_set(cache_key, result)

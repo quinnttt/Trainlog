@@ -887,5 +887,8 @@
     "allTime": "minden idők",
     "inXDays": "{n} nap múlva",
     "inXHours": "{n} óra múlva",
-    "soon": "hamarosan"
+    "soon": "hamarosan",
+    "moneySpent": "Kiadások",
+    "co2Emissions": "CO₂-kibocsátás",
+    "total": "Összesen"
 }

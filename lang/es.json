@@ -887,5 +887,8 @@
     "allTime": "todo el tiempo",
     "inXDays": "en {n}d",
     "inXHours": "en {n}h",
-    "soon": "pronto"
+    "soon": "pronto",
+    "moneySpent": "Gasto",
+    "co2Emissions": "Emisiones de CO₂",
+    "total": "Total"
 }

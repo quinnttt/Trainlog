@@ -887,5 +887,8 @@
     "allTime": "kogu aeg",
     "inXDays": "{n} päeva pärast",
     "inXHours": "{n} tunni pärast",
-    "soon": "peagi"
+    "soon": "peagi",
+    "moneySpent": "Kulu",
+    "co2Emissions": "CO₂ emissioonid",
+    "total": "Kokku"
 }

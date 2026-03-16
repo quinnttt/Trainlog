@@ -887,5 +887,8 @@
     "allTime": "všechny časy",
     "inXDays": "za {n} dní",
     "inXHours": "za {n} hodin",
-    "soon": "brzy"
+    "soon": "brzy",
+    "moneySpent": "Výdaje",
+    "co2Emissions": "Emise CO₂",
+    "total": "Celkem"
 }

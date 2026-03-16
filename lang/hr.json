@@ -887,5 +887,8 @@
     "allTime": "sve vrijeme",
     "inXDays": "za {n} dana",
     "inXHours": "za {n} sati",
-    "soon": "uskoro"
+    "soon": "uskoro",
+    "moneySpent": "Rashodi",
+    "co2Emissions": "Emisije CO₂",
+    "total": "Ukupno"
 }

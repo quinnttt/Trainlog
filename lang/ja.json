@@ -887,5 +887,8 @@
     "allTime": "すべての時間",
     "inXDays": "{n}日後に",
     "inXHours": "{n}時間後に",
-    "soon": "すぐに"
+    "soon": "すぐに",
+    "moneySpent": "支出",
+    "co2Emissions": "CO₂排出量",
+    "total": "合計"
 }

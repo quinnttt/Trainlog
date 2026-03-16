@@ -887,5 +887,8 @@
     "allTime": "tüm zamanlar",
     "inXDays": "{n} gün içinde",
     "inXHours": "{n} saat içinde",
-    "soon": "yakında"
+    "soon": "yakında",
+    "moneySpent": "Giderler",
+    "co2Emissions": "CO₂ Emisyonları",
+    "total": "Toplam"
 }

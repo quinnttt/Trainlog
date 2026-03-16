@@ -887,5 +887,8 @@
     "allTime": "전체 기간",
     "inXDays": "{n}일 후에",
     "inXHours": "{n}시간 후에",
-    "soon": "곧"
+    "soon": "곧",
+    "moneySpent": "지출",
+    "co2Emissions": "CO₂ 배출량",
+    "total": "총계"
 }

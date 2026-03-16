@@ -887,5 +887,8 @@
     "allTime": "di ganz Zit",
     "inXDays": "i {n} Täg",
     "inXHours": "i {n} Stunde",
-    "soon": "gliich"
+    "soon": "gliich",
+    "moneySpent": "Usgabeflücht",
+    "co2Emissions": "CO₂-Usstoss",
+    "total": "Total"
 }

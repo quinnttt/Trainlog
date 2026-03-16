@@ -887,5 +887,8 @@
     "allTime": "kaikkina aikoina",
     "inXDays": "{n} päivän päästä",
     "inXHours": "{n} tunnin päästä",
-    "soon": "pian"
+    "soon": "pian",
+    "moneySpent": "Kustannukset",
+    "co2Emissions": "CO₂-päästöt",
+    "total": "Yhteensä"
 }
