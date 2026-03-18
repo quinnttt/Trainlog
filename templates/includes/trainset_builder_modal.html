@@ -72,6 +72,7 @@
   var _personalSets = [];
   var _refName      = null; // set when strip is loaded as a reference (not for editing)
   var _dragUid      = null;
+  var _phTypes      = [null, 'loco_l', 'loco_both', 'loco_r', 'mid']; // null = auto
 
   /* ── open ── */
   window.openTsbModal = function () {
@@ -272,6 +273,15 @@
     if (u) { _refName = null; u._side = u._side === 'L' ? 'R' : 'L'; _render(); }
   };
 
+  window.tsbCyclePh = function (uid) {
+    var u = _units.find(function (u) { return u._uid === uid; });
+    if (!u) return;
+    _refName = null;
+    var idx = _phTypes.indexOf(u._phType || null);
+    u._phType = _phTypes[(idx + 1) % _phTypes.length];
+    _render();
+  };
+
   window.tsbRemove = function (uid) {
     _refName = null;
     _units = _units.filter(function (u) { return u._uid !== uid; });
@@ -303,7 +313,7 @@
 
     _units.forEach(function (u, i) {
       var isFirst = (i === 0), isLast = (i === _units.length - 1);
-      var phSuffix = (isFirst && isLast) ? 'loco_both' : isFirst ? 'loco_l' : isLast ? 'loco_r' : 'mid';
+      var phSuffix = u._phType || ((isFirst && isLast) ? 'loco_both' : isFirst ? 'loco_l' : isLast ? 'loco_r' : 'mid');
       var phSrc = WAGONS + '/placeholder_' + phSuffix + '.svg';
 
       var card = document.createElement('div');
@@ -371,6 +381,18 @@
           btns.appendChild(flip);
         }
 
+        if (!u.image) {
+          var phLabels = { 'loco_l': '◀—', 'loco_both': '◀▶', 'loco_r': '—▶', 'mid': '■' };
+          var cycleBtn = document.createElement('button');
+          cycleBtn.type = 'button';
+          cycleBtn.className = 'btn btn-outline-secondary p-0';
+          cycleBtn.style.cssText = 'font-size:.55rem;min-width:24px;height:18px;line-height:1;padding:0 2px';
+          cycleBtn.title = 'Change placeholder type';
+          cycleBtn.textContent = u._phType ? phLabels[u._phType] : '↺';
+          cycleBtn.onclick = (function (uid) { return function () { tsbCyclePh(uid); }; })(u._uid);
+          btns.appendChild(cycleBtn);
+        }
+
         var rm = document.createElement('button');
         rm.type = 'button';
         rm.className = 'btn btn-outline-danger p-0';
@@ -409,7 +431,9 @@
       return;
     }
     var json = JSON.stringify(_units.map(function (u) {
-      return { name: u.name, image: u.image, label: u.label, _side: u._side, image_type: u.image_type };
+      var o = { name: u.name, image: u.image, label: u.label, _side: u._side, image_type: u.image_type };
+      if (u._phType) o._phType = u._phType;
+      return o;
     }));
     _tsbWriteAndClose(json);
   };

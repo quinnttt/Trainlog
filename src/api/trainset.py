@@ -313,7 +313,7 @@ def resolve_material_type_advanced():
         try:
             parsed = json.loads(value)
             if isinstance(parsed, list):
-                slim = [{'name': u['name'], '_side': u.get('_side', 'L')} for u in parsed if 'name' in u]
+                slim = _slim_units(parsed)
                 return jsonify(_enrich_units(pg, slim))
         except (json.JSONDecodeError, TypeError):
             pass
@@ -336,8 +336,16 @@ def resolve_material_type_advanced():
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 def _slim_units(units):
-    """Keep only wagon name and flip-side — all other data lives in the wagons table."""
-    return [{'name': u['name'], '_side': u.get('_side', 'L')} for u in units if 'name' in u]
+    """Keep only wagon name, flip-side, and placeholder type — all other data lives in the wagons table."""
+    slim = []
+    for u in units:
+        if 'name' not in u:
+            continue
+        s = {'name': u['name'], '_side': u.get('_side', 'L')}
+        if u.get('_phType'):
+            s['_phType'] = u['_phType']
+        slim.append(s)
+    return slim
 
 
 def _enrich_units(pg, slim_units):
@@ -359,5 +367,7 @@ def _enrich_units(pg, slim_units):
                 'notes': None, 'source': None, 'author': None, 'license': None,
             }
         unit['_side'] = u.get('_side', 'L')
+        if u.get('_phType'):
+            unit['_phType'] = u['_phType']
         enriched.append(unit)
     return enriched

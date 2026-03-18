@@ -180,7 +180,7 @@ return `
       max-width: 600px;
       display: inline-block;
       white-space: nowrap; 
-      overflow: hidden;
+      overflow: visible;
     }
   </style>
   <div class="popup-content" style="
@@ -250,6 +250,17 @@ function placePeg(position, tripObj){
 
 /* ───────────────────────────── main renderer ──────────────────────────── */
 let tripsLayerGroup = null;   // global reference so we can replace it
+let lastTripsSignature = null;
+
+function fitMapToTrips() {
+  if (tripsLayerGroup && tripsLayerGroup.getLayers().length) {
+    map.fitBounds(tripsLayerGroup.getBounds());
+  } else {
+    // Default bounds: [[southWestLat, southWestLng], [northEastLat, northEastLng]]
+    const defaultBounds = [[20, -130], [60, 30]]; // adjust these values as needed
+    map.fitBounds(defaultBounds);
+  }
+}
 
 function renderTrips(trips){
   if (tripsLayerGroup){
@@ -286,14 +297,7 @@ function renderTrips(trips){
     tripsLayerGroup.addLayer(placePeg(pegPos, trip));
   });
 
-  if (trips.length) {
-        tripsLayerGroup.addTo(map);
-        map.fitBounds(tripsLayerGroup.getBounds());
-    } else {
-        // Default bounds: [[southWestLat, southWestLng], [northEastLat, northEastLng]]
-        const defaultBounds = [[20, -130], [60, 30]]; // adjust these values as needed
-        map.fitBounds(defaultBounds);
-    }
+  tripsLayerGroup.addTo(map);
   $('.spinner-container').hide();
 }
 
@@ -308,10 +312,18 @@ var map = createMap({
 }, null);
 
 function loadTrips(){
-  $.get(apiEndpoint, renderTrips);  // Use the dynamic endpoint
+  $.get(apiEndpoint, function(trips) {  // Use the dynamic endpoint
+    const signature = JSON.stringify(trips);
+    renderTrips(trips);
+
+    if (signature !== lastTripsSignature) {
+      lastTripsSignature = signature;
+      fitMapToTrips();
+    }
+  });
 }
 
-loadTrips();                    // first draw
-setInterval(loadTrips, 60000);  // refresh every minute
+loadTrips();                        // first draw (fit happens after data arrives)
+setInterval(loadTrips, 60000);       // refresh every 60 seconds
 </script>
 {% endblock %}

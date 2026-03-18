@@ -55,6 +55,7 @@
       <hr>
       <label for="default_landing">{{defaultLanding}}</label>
       <select class="form-select" name="default_landing" id="default_landing">
+        <option value="dashboard" {% if default_landing=="dashboard" %}selected{% endif %}>🏠 {{user_dashboard}}</option>
         <option value="map" {% if default_landing=="map" %}selected{% endif %}>🗺️ {{map}}</option>
         <option value="new_map" {% if default_landing=="new_map" %}selected{% endif %}>🌍 {{map}} β</option>
         <option value="trips" {% if default_landing=="trips" %}selected{% endif %}>🕰️ {{trips}}</option>

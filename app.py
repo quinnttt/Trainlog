@@ -151,6 +151,7 @@ from src.api.stats import stats_blueprint, fetch_stats, get_distinct_stat_years
 from src.api.ai import ai_blueprint
 from src.api.trainset import trainset_blueprint
 from src.api.vagonweb import vagonweb_blueprint
+from src.api.dashboard import dashboard_blueprint
 from src.consts import DbNames, TripTypes
 from src.pg import setup_db
 from src.suspicious_activity import (
@@ -224,6 +225,7 @@ app.register_blueprint(wrapped_blueprint)
 app.register_blueprint(ai_blueprint)
 app.register_blueprint(trainset_blueprint)
 app.register_blueprint(vagonweb_blueprint)
+app.register_blueprint(dashboard_blueprint)
 
 app.config["CACHE_TYPE"] = "SimpleCache"
 app.config["CACHE_DEFAULT_TIMEOUT"] = 864000
@@ -2632,7 +2634,9 @@ def landing():
         user = User.query.filter_by(username=username).first()
         if user:
             # Redirect to the user's default landing page
-            if user.default_landing == "trips":
+            if user.default_landing == "dashboard":
+                return redirect(url_for("user_dashboard", username=username))
+            elif user.default_landing == "trips":
                 return redirect(
                     url_for("dynamic_trips", username=username, time="trips")
                 )
@@ -6264,7 +6268,7 @@ def edit_copy_trip(username, tripId, edit_copy_type):
         tripMaterialTypeAdvanced=tripMaterialTypeAdvanced or "",
         tripSeat=tripSeat or "",
         tripReg=tripReg or "",
-        tripPrice=tripPrice or "",
+        tripPrice=tripPrice if tripPrice is not None else "",
         tripCurrency=tripCurrency or "",
         tripPurchasingDate=tripPurchasingDate or "",
         tripType=tripType,
@@ -8610,8 +8614,9 @@ def trainloglogger(username):
 
 
 @app.route("/u/<username>/getBounds")
+@app.route("/u/<username>/getBounds/<year>")
 @login_required
-def get_bounds(username):
+def get_bounds(username, year=None):
     def get_location(lat, lon):
         responseJson = photonRequest(
             "/reverse",
@@ -8683,8 +8688,9 @@ def get_bounds(username):
                     )
                     AND utc_filtered_start_datetime != 1
                 AND username = :username
+                AND (:year IS NULL OR strftime('%Y', utc_filtered_start_datetime) = :year)
             """,
-            {"username": username},
+            {"username": username, "year": year},
         )
         trip_ids_with_type = dict((row[0], row[1]) for row in main_cursor.fetchall())
 
@@ -8748,12 +8754,19 @@ def get_bounds(username):
 
 
 @app.route("/u/<username>/bounds")
+@app.route("/u/<username>/bounds/<year>")
 @login_required
-def user_bounds(username):
+def user_bounds(username, year=None):
+    distinctStatYears = get_distinct_stat_years(username, "combined")
+    if year is not None and year not in distinctStatYears:
+        return redirect(url_for("user_bounds", username=username))
+
     return render_template(
         "bounds.html",
         title=lang[session["userinfo"]["lang"]]["travel_bounds_header"],
         username=username,
+        boundsYear=year,
+        distinctStatYears=distinctStatYears,
         translations=lang[session["userinfo"]["lang"]],
         **lang[session["userinfo"]["lang"]],
         **session["userinfo"],

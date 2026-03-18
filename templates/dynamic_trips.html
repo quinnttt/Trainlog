@@ -9,6 +9,10 @@
 
     #dataTable_wrapper { min-height: 600px; }
 
+    @media screen and (max-width: 767px) {
+        #dataTable_wrapper { margin-top: 15px; }
+    }
+
     /* Trainset picker in edit/new forms */
     .ts-pick-wrap { position: relative; display: inline-block; width: 100%; }
     .ts-pick-list { position: absolute; z-index: 999; left: 0; right: 0; top: 100%;
@@ -244,7 +248,7 @@
         <button type="button" id="shareTripsLeaveAsIsButton" class="btn btn-primary" style="height: 38px">
             <span id="shareTripsLeaveAsIsButtonLabel">{{share_trips_leave_as_is}}</span>
         </button>
-        <button type="button" id="shareTripsMakePublicButton" class="btn btn-success mb-0" style="height: 38px">
+        <button type="button" id="shareTripsMakePublicButton" class="btn btn-success" style="height: 38px">
             <span id="shareTripsMakePublicButtonLabel">{{share_trips_make_public}}</span>
             <span id="shareTripsMakePublicSpinner" class="spinner-border spinner-border-sm" role="status" style="display:none"></span>
         </button>
@@ -957,7 +961,7 @@ function renderPrices(data, type, row) {
             .append($('<span>').attr("style", "display:none;").text(row.ticket_price_in_user_currency))
             .append(`<span data-toggle="tooltip" style="cursor:context-menu;" data-placement="top" title="${formattedTicketPrice}"><i style="color:#228B22;" class="bi bi-ticket-perforated-fill"></i></span>`);
         }
-        if (row.price) {
+        if (isNumber(row.price)) {
             let formattedPriceText = formatCurrency("{{langId}}", row.price_in_user_currency, row.user_currency);
             if (row.user_currency != row.currency) {
                 let originalCurrency = formatCurrency("{{langId}}", row.price, row.currency);
@@ -1262,13 +1266,10 @@ var table = $('#tripRows');
     updateSelectionMessage();
 });
 
-// Append ?next= to edit/copy links so we return to the same page after saving
-$(document).on('click', '.editButton, .copyButton', function(e) {
-    var href = $(this).attr('href');
-    if (href && !href.includes('?next=')) {
-        e.preventDefault();
-        window.location.href = href + '?next=' + encodeURIComponent(window.location.href);
-    }
+// Update ?next= on the href just before navigation so it reflects the current URL (including filters/sort/page)
+$(document).on('mousedown', '.editButton, .copyButton', function() {
+    var base = $(this).attr('href').split('?')[0];
+    $(this).attr('href', base + '?next=' + encodeURIComponent(window.location.href));
 });
 
 (function() {

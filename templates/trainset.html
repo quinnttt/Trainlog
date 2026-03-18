@@ -801,12 +801,12 @@ function smartImgSrc(imagePath, side = 'L', imageType = 'sides') {
   if (imageType === 'sides_R') return `${WAGONS_URL}/${imagePath}_R.gif`;
   return `${WAGONS_URL}/${imagePath}.gif`;
 }
-function _placeholderSrc(isFirst, isLast) {
-  const suffix = (isFirst && isLast) ? 'loco_both' : isFirst ? 'loco_l' : isLast ? 'loco_r' : 'mid';
+function _placeholderSrc(isFirst, isLast, phType) {
+  const suffix = phType || ((isFirst && isLast) ? 'loco_both' : isFirst ? 'loco_l' : isLast ? 'loco_r' : 'mid');
   return `${WAGONS_URL}/placeholder_${suffix}.svg`;
 }
-function smartImgOnerror(isFirst, isLast) {
-  const src = _placeholderSrc(isFirst, isLast);
+function smartImgOnerror(isFirst, isLast, phType) {
+  const src = _placeholderSrc(isFirst, isLast, phType);
   return `this.src='${src}';this.className='wagon-placeholder-img';this.onerror=null;`;
 }
 
@@ -846,6 +846,15 @@ function flipUnit(uid) {
   renderStrip();
 }
 
+const _phTypes = [null, 'loco_l', 'loco_both', 'loco_r', 'mid'];
+function cyclePlaceholder(uid) {
+  const u = currentTs.units.find(u => u._uid === uid);
+  if (!u) return;
+  const idx = _phTypes.indexOf(u._phType || null);
+  u._phType = _phTypes[(idx + 1) % _phTypes.length];
+  renderStrip();
+}
+
 function removeUnit(uid) {
   currentTs.units = currentTs.units.filter(u => u._uid !== uid);
   renderStrip();
@@ -878,13 +887,16 @@ function renderStrip() {
     const side = u._side || 'L';
     el.dataset.side = side;
     const isFirst = (i === 0), isLast = (i === units.length - 1);
-    const imgSrc  = u.image ? smartImgSrc(u.image, side, u.image_type) : _placeholderSrc(isFirst, isLast);
-    const imgErr  = `this.src='${_placeholderSrc(isFirst, isLast)}';this.className='wagon-placeholder-img';this.onerror=null;`;
+    const phType  = u._phType || null;
+    const imgSrc  = u.image ? smartImgSrc(u.image, side, u.image_type) : _placeholderSrc(isFirst, isLast, phType);
+    const imgErr  = `this.src='${_placeholderSrc(isFirst, isLast, phType)}';this.className='wagon-placeholder-img';this.onerror=null;`;
     const canFlip = u.image_type === 'sides';
+    const phLabels = { 'loco_l': '◀—', 'loco_both': '◀▶', 'loco_r': '—▶', 'mid': '■' };
     el.innerHTML = `
       <div class="unit-number">#${i + 1}</div>
       <div class="unit-controls">
         ${canFlip ? `<button class="uc-btn flip" title="${i18n.flipSide} (${side})" data-action="flip">◄►</button>` : ''}
+        ${!u.image ? `<button class="uc-btn flip" title="Change placeholder type" data-action="cycle-ph">${phType ? phLabels[phType] : '↺'}</button>` : ''}
         <button class="uc-btn" title="${i18n.info}" data-action="info">ℹ</button>
         <button class="uc-btn" title="${i18n.deleteTitle}" data-action="del">✕</button>
       </div>
@@ -897,6 +909,7 @@ function renderStrip() {
       </div>
     `;
     el.querySelector('[data-action=flip]')?.addEventListener('click', e => { e.stopPropagation(); flipUnit(u._uid); });
+    el.querySelector('[data-action=cycle-ph]')?.addEventListener('click', e => { e.stopPropagation(); cyclePlaceholder(u._uid); });
     el.querySelector('[data-action=del]').addEventListener('click', e => { e.stopPropagation(); removeUnit(u._uid); });
     el.querySelector('[data-action=info]').addEventListener('click', e => { e.stopPropagation(); showDetail(u); });
     el.addEventListener('dragstart', e => { dragSrcIdx = i; el.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
@@ -1068,7 +1081,7 @@ async function saveTrainset() {
   try {
     const method = currentTs.id ? 'PUT' : 'POST';
     const url    = currentTs.id ? `${BASE}/api/trainsets/${currentTs.id}` : `${BASE}/api/trainsets`;
-    const body   = { name, units: currentTs.units.map(u => ({ name: u.name, _side: u._side || 'L' })) };
+    const body   = { name, units: currentTs.units.map(u => { const o = { name: u.name, _side: u._side || 'L' }; if (u._phType) o._phType = u._phType; return o; }) };
     if (!currentTs.id) body.is_admin = currentTs.is_admin || 0;
     const res  = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     if (!res.ok) { const d = await res.json(); setStatus(d.error || i18n.saveFailed, true); return; }
