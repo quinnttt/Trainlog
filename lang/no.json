@@ -858,6 +858,7 @@
     "routeTrip": "Ruteplanlegging",
     "sharedLink": "Delt tur",
     "colorblindMode": "Fargeblindmodus",
+    "legacy_menu" : "Bruk gammelt menydesign",
     "hoursOnTrains": "Reiste timer",
     "upcomingTrips": "Kommende reiser",
     "recentTrips": "Nylige reiser",

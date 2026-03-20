@@ -858,6 +858,7 @@
     "routeTrip": "行程路线规划",
     "sharedLink": "共享行程",
     "colorblindMode": "色盲模式",
+    "legacy_menu" : "使用旧版菜单设计",
     "hoursOnTrains": "旅行时间",
     "upcomingTrips": "即将到来的旅行",
     "recentTrips": "最近的旅行",

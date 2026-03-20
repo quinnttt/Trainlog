@@ -858,6 +858,7 @@
     "routeTrip": "여정 경로 탐색",
     "sharedLink": "공유된 여행",
     "colorblindMode": "색약 모드",
+    "legacy_menu" : "기존 메뉴 디자인 사용",
     "hoursOnTrains": "여행한 시간",
     "upcomingTrips": "다가오는 여행",
     "recentTrips": "최근 여행",

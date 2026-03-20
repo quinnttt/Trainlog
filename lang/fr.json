@@ -858,6 +858,7 @@
     "routeTrip": "Planification d’itinéraire",
     "sharedLink": "Voyage partagé",
     "colorblindMode": "Mode daltonien",
+    "legacy_menu" : "Utiliser l’ancien design du menu",
     "hoursOnTrains": "Heures voyagées",
     "upcomingTrips": "Prochains trajets",
     "recentTrips": "Trajets récents",

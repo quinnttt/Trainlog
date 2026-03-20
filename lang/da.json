@@ -858,6 +858,7 @@
     "routeTrip": "Rejseruting",
     "sharedLink": "Fælles tur",
     "colorblindMode": "Farveblind tilstand",
+    "legacy_menu" : "Brug det gamle menudesign",
     "hoursOnTrains": "Timer rejst",
     "upcomingTrips": "Kommende rejser",
     "recentTrips": "Seneste rejser",

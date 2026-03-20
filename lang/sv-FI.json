@@ -858,6 +858,7 @@
     "routeTrip": "Ruttplanering",
     "sharedLink": "Delad resa",
     "colorblindMode": "Färgblindhetsläge",
+    "legacy_menu" : "Använd gammal menydesign",
     "hoursOnTrains": "Resa timmar",
     "upcomingTrips": "Kommande resor",
     "recentTrips": "Senaste resor",
