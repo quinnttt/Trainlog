@@ -31,6 +31,7 @@ class User(authDb.Model):
     tileserver = authDb.Column(authDb.String(50), nullable=False, default="default")
     globe = authDb.Column(authDb.Boolean, nullable=False, default=False)
     premium = authDb.Column(authDb.Boolean, nullable=False, default=False)
+    legacyMenu = authDb.Column(authDb.Boolean, nullable=False, default=False)
 
     def toDict(self):
         return {

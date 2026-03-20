@@ -402,6 +402,17 @@ def fetch_and_filter_flights(flight_filter_key, flight_filter_value, target_date
                         pass
     return {"data": filtered}, 200
 
+@app.context_processor
+def inject_globals():
+    legacyMenu = False
+
+    if "userinfo" in session:
+        user_id = session["userinfo"].get("user_id")
+        if user_id:
+            user = User.query.get(user_id)
+            legacyMenu = getattr(user, "legacyMenu", False) if user else False
+
+    return {"legacyMenu": legacyMenu}
 
 @app.route("/api/u/<username>/flight_summary")
 @login_required
@@ -6006,6 +6017,7 @@ def user_settings(username):
         params["leaderboard"] = "leaderboard" in request.form
         params["friend_search"] = "friend_search" in request.form
         params["appear_on_global"] = "appear_on_global" in request.form
+        params["legacyMenu"] = "legacyMenu" in request.form
         params["colorblind"] = "colorblind" in request.form
         params["lang"] = request.form["lang"]
         params["user_currency"] = request.form["user_currency"]
@@ -6028,6 +6040,7 @@ def user_settings(username):
     friend_search_checked = "checked" if user.friend_search else ""
     appear_on_global_checked = "checked" if user.appear_on_global else ""
     colorblind_checked = "checked" if user.colorblind else ""
+    legacy_menu_checked = "checked" if user.legacyMenu else ""
 
     return render_template(
         "user_settings.html",
@@ -6063,7 +6076,8 @@ def user_settings_app(username):
             "share_level", 
             "leaderboard", 
             "friend_search", 
-            "appear_on_global", 
+            "appear_on_global",
+            "legacy_menu", 
             "colorblind",
             "user_currency"
         }
@@ -6093,6 +6107,7 @@ def user_settings_app(username):
         "leaderboard": user.leaderboard,
         "friend_search": user.friend_search,
         "appear_on_global": user.appear_on_global,
+        "legacy_menu": user.legacyMenu,
         "colorblind": user.colorblind,
         "user_currency": user.user_currency,
     }), 200
