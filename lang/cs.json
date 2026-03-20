@@ -892,5 +892,14 @@
     "co2Emissions": "Emise CO₂",
     "total": "Celkem",
     "byMode": "Podle režimu",
-    "mode": "Režim"
+    "mode": "Režim",
+    "tl_title": "Časová osa země pro",
+    "tl_years_tracked": "Sledovaná léta",
+    "tl_total_days_abroad": "Celkový počet dní v zahraničí",
+    "tl_avg_days_per_year": "Průměrné dny / rok",
+    "tl_countries_of_residence": "Země pobytu",
+    "tl_days_abroad_per_year_title": "Dny strávené v zahraničí za rok",
+    "tl_residence": "Bydliště",
+    "tl_days_abroad_col": "Dny v zahraničí",
+    "tl_scroll_hint": "Posuňte / přiblížením gesto zvětšete  ·  táhněte k posunu"
 }

@@ -892,5 +892,14 @@
     "co2Emissions": "CO₂-uitstoot",
     "total": "Totaal",
     "byMode": "Per modus",
-    "mode": "Modus"
+    "mode": "Modus",
+    "tl_title": "Landtijdlijn voor",
+    "tl_years_tracked": "Jaren gevolgd",
+    "tl_total_days_abroad": "Totale dagen in het buitenland",
+    "tl_avg_days_per_year": "Gemiddelde dagen / jaar",
+    "tl_countries_of_residence": "Verblijfslanden",
+    "tl_days_abroad_per_year_title": "Dagen in het buitenland per jaar",
+    "tl_residence": "Verblijfplaats",
+    "tl_days_abroad_col": "Dagen in het buitenland",
+    "tl_scroll_hint": "Scroll / knijp om in te zoomen  ·  sleep om te pannen"
 }

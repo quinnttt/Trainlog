@@ -892,5 +892,14 @@
     "co2Emissions": "Выбросы CO₂",
     "total": "Итого",
     "byMode": "По режиму",
-    "mode": "Режим"
+    "mode": "Режим",
+    "tl_title": "Хронология страны для",
+    "tl_years_tracked": "Годы отслеживания",
+    "tl_total_days_abroad": "Общее количество дней за границей",
+    "tl_avg_days_per_year": "Среднее количество дней / год",
+    "tl_countries_of_residence": "Страны проживания",
+    "tl_days_abroad_per_year_title": "Дни, проведенные за границей в год",
+    "tl_residence": "Место жительства",
+    "tl_days_abroad_col": "Дни за границей",
+    "tl_scroll_hint": "Прокрутка / сжатие для увеличения  ·  перемещение для панорамирования"
 }

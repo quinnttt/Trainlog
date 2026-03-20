@@ -892,5 +892,14 @@
     "co2Emissions": "Emissões de CO₂",
     "total": "Total",
     "byMode": "Por modo",
-    "mode": "Modo"
+    "mode": "Modo",
+    "tl_title": "Cronologia do País para",
+    "tl_years_tracked": "Anos rastreados",
+    "tl_total_days_abroad": "Total de dias no estrangeiro",
+    "tl_avg_days_per_year": "Média de dias / ano",
+    "tl_countries_of_residence": "Países de residência",
+    "tl_days_abroad_per_year_title": "Dias Passados no Estrangeiro Por Ano",
+    "tl_residence": "Residência",
+    "tl_days_abroad_col": "Dias no estrangeiro",
+    "tl_scroll_hint": "Rolar / aproximar para ampliar  ·  arrastar para mover"
 }

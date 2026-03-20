@@ -892,5 +892,14 @@
     "co2Emissions": "CO₂-utsläpp",
     "total": "Totalt",
     "byMode": "Per läge",
-    "mode": "Läge"
+    "mode": "Läge",
+    "tl_title": "Landtidslinje för",
+    "tl_years_tracked": "År spårade",
+    "tl_total_days_abroad": "Totala dagar utomlands",
+    "tl_avg_days_per_year": "Genomsnittliga dagar / år",
+    "tl_countries_of_residence": "Bosättningsländer",
+    "tl_days_abroad_per_year_title": "Dagar tillbringade utomlands per år",
+    "tl_residence": "Bostad",
+    "tl_days_abroad_col": "Dagar utomlands",
+    "tl_scroll_hint": "Skrolla / nyp för att zooma  ·  dra för att panorera"
 }

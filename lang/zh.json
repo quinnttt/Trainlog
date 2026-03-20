@@ -892,5 +892,14 @@
     "co2Emissions": "CO₂排放",
     "total": "总计",
     "byMode": "按模式",
-    "mode": "模式"
+    "mode": "模式",
+    "tl_title": "国家时间轴",
+    "tl_years_tracked": "跟踪年份",
+    "tl_total_days_abroad": "在国外的总天数",
+    "tl_avg_days_per_year": "平均天数 / 年",
+    "tl_countries_of_residence": "居住国家",
+    "tl_days_abroad_per_year_title": "每年在国外度过的天数",
+    "tl_residence": "居住地",
+    "tl_days_abroad_col": "国外天数",
+    "tl_scroll_hint": "滚动 / 捏合以缩放  ·  拖动以平移"
 }

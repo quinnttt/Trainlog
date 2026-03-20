@@ -892,5 +892,14 @@
     "co2Emissions": "CO₂ emissioonid",
     "total": "Kokku",
     "byMode": "Režiimi järgi",
-    "mode": "Režiim"
+    "mode": "Režiim",
+    "tl_title": "Riigi ajalugu jaoks",
+    "tl_years_tracked": "Jälgitud aastad",
+    "tl_total_days_abroad": "Kogupäevad välismaal",
+    "tl_avg_days_per_year": "Keskmine päevade arv / aasta",
+    "tl_countries_of_residence": "Elukohariigid",
+    "tl_days_abroad_per_year_title": "Välismaal veedetud päevad aastas",
+    "tl_residence": "Elukoht",
+    "tl_days_abroad_col": "Päevad välismaal",
+    "tl_scroll_hint": "Kerige / näpistage suumimiseks  ·  lohistage liikumiseks"
 }

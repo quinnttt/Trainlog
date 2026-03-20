@@ -892,5 +892,14 @@
     "co2Emissions": "CO₂排出量",
     "total": "合計",
     "byMode": "モード別",
-    "mode": "モード"
+    "mode": "モード",
+    "tl_title": "国のタイムライン",
+    "tl_years_tracked": "追跡された年数",
+    "tl_total_days_abroad": "海外滞在総日数",
+    "tl_avg_days_per_year": "平均日数 / 年",
+    "tl_countries_of_residence": "居住国",
+    "tl_days_abroad_per_year_title": "年間海外滞在日数",
+    "tl_residence": "居住地",
+    "tl_days_abroad_col": "海外日数",
+    "tl_scroll_hint": "スクロール / ピンチでズーム  ·  ドラッグで移動"
 }

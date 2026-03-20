@@ -892,5 +892,14 @@
     "co2Emissions": "Emisije CO₂",
     "total": "Ukupno",
     "byMode": "Prema načinu",
-    "mode": "Način"
+    "mode": "Način",
+    "tl_title": "Vremenska crta zemlje za",
+    "tl_years_tracked": "Praćene godine",
+    "tl_total_days_abroad": "Ukupan broj dana u inozemstvu",
+    "tl_avg_days_per_year": "Prosječni dani / godina",
+    "tl_countries_of_residence": "Zemlje prebivališta",
+    "tl_days_abroad_per_year_title": "Dani provedeni u inozemstvu godišnje",
+    "tl_residence": "Prebivalište",
+    "tl_days_abroad_col": "Dani u inozemstvu",
+    "tl_scroll_hint": "Skrolaj / štipni za zumiranje  ·  povuci za pomicanje"
 }

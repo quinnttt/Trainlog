@@ -892,5 +892,14 @@
     "co2Emissions": "CO₂-päästöt",
     "total": "Yhteensä",
     "byMode": "Tilojen mukaan",
-    "mode": "Tila"
+    "mode": "Tila",
+    "tl_title": "Maan aikajana varten",
+    "tl_years_tracked": "Seuratut vuodet",
+    "tl_total_days_abroad": "Kokonaispäivät ulkomailla",
+    "tl_avg_days_per_year": "Keskimääräiset päivät / vuosi",
+    "tl_countries_of_residence": "Asuinmaat",
+    "tl_days_abroad_per_year_title": "Ulkomailla vietetyt päivät vuodessa",
+    "tl_residence": "Asuinpaikka",
+    "tl_days_abroad_col": "Päivät ulkomailla",
+    "tl_scroll_hint": "Vieritä / nipistä suurentaaksesi  ·  vedä siirtääksesi"
 }

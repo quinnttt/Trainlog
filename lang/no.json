@@ -892,5 +892,14 @@
     "co2Emissions": "CO₂-utslipp",
     "total": "Total",
     "byMode": "Etter modus",
-    "mode": "Modus"
+    "mode": "Modus",
+    "tl_title": "Landtidslinje for",
+    "tl_years_tracked": "År sporet",
+    "tl_total_days_abroad": "Totalt antall dager i utlandet",
+    "tl_avg_days_per_year": "Gj.snitt dager / år",
+    "tl_countries_of_residence": "Bostedsland",
+    "tl_days_abroad_per_year_title": "Dager brukt i utlandet per år",
+    "tl_residence": "Bosted",
+    "tl_days_abroad_col": "Dager i utlandet",
+    "tl_scroll_hint": "Rull / knip for å zoome  ·  dra for å panorere"
 }

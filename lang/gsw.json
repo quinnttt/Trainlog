@@ -892,5 +892,14 @@
     "co2Emissions": "CO₂-Usstoss",
     "total": "Total",
     "byMode": "Nach Modus",
-    "mode": "Modus"
+    "mode": "Modus",
+    "tl_title": "Länderverlauf für",
+    "tl_years_tracked": "Verfolgte Jahre",
+    "tl_total_days_abroad": "Totali Täg im Usland",
+    "tl_avg_days_per_year": "Durschnittlich Täg / Jahr",
+    "tl_countries_of_residence": "Länder vom Wohnort",
+    "tl_days_abroad_per_year_title": "Verbrachti Täg im Usland pro Jahr",
+    "tl_residence": "Wohnort",
+    "tl_days_abroad_col": "Täg im Usland",
+    "tl_scroll_hint": "Scrolla / pinchä zum vergröösere  ·  zieh zum verschiebe"
 }

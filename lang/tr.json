@@ -892,5 +892,14 @@
     "co2Emissions": "CO₂ Emisyonları",
     "total": "Toplam",
     "byMode": "Moda göre",
-    "mode": "Mod"
+    "mode": "Mod",
+    "tl_title": "Ülke Zaman Çizelgesi için",
+    "tl_years_tracked": "Takip edilen yıllar",
+    "tl_total_days_abroad": "Yurtdışında toplam günler",
+    "tl_avg_days_per_year": "Ortalama gün / yıl",
+    "tl_countries_of_residence": "İkamet edilen ülkeler",
+    "tl_days_abroad_per_year_title": "Yılda Yurtdışında Geçirilen Günler",
+    "tl_residence": "İkamet yeri",
+    "tl_days_abroad_col": "Yurtdışında günler",
+    "tl_scroll_hint": "Kaydır / yakınlaştırmak için kıstır  ·  taşımak için sürükle"
 }
