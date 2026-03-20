@@ -48,6 +48,7 @@ class User(authDb.Model):
             "reset_token": self.reset_token,
             "share_level": self.share_level,
             "user_currency": self.user_currency,
+            "legacyMenu": self.legacyMenu,
             "colorblind": self.colorblind,
             "tileserver": self.tileserver,
             "globe": self.globe,

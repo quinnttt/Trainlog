@@ -6053,6 +6053,7 @@ def user_settings(username):
         friend_search_checked=friend_search_checked,
         appear_on_global_checked=appear_on_global_checked,
         colorblind_checked=colorblind_checked,
+        legacy_menu_checked=legacy_menu_checked,
         user_currency=user.user_currency,
         default_landing=user.default_landing,
         user_tileserver=user.tileserver,
