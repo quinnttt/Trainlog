@@ -2,104 +2,588 @@
 {% block content %}
 {% include nav %}
 <style>
+  /* ── Timeline canvas ── */
+  #timeline-container {
+    position: relative;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+  #timeline-container:active { cursor: grabbing; }
+  #tl-hint {
+    text-align: center;
+    color: #adb5bd;
+    font-size: 11px;
+    padding: 3px 0 5px;
+    background: #fff;
+    border-top: 1px solid #f3f3f3;
+    letter-spacing: .02em;
+  }
+  .tl-tooltip {
+    position: fixed;
+    background: rgba(15,15,15,0.88);
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    pointer-events: none;
+    display: none;
+    z-index: 9999;
+    white-space: nowrap;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
 
-    th {
-        color: #000;
-    }
+  /* ── Page chrome ── */
+  .tl-page-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    color: #212529;
+  }
+  .tl-page-title span.username { color: #0d6efd; }
 
+  /* ── Summary stat cards ── */
+  .tl-stat-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 20px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.07);
+    border-left: 4px solid #0d6efd;
+  }
+  .tl-stat-card .tl-stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #0d6efd;
+    line-height: 1.1;
+  }
+  .tl-stat-card .tl-stat-label {
+    font-size: 0.78rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  /* ── Table ── */
+  .tl-table-card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.07);
+    border: none;
+  }
+  .tl-table-card .card-header {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    border: none;
+    padding: 12px 20px;
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+  .tl-table th {
+    color: #495057;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    border-bottom: 2px solid #dee2e6;
+    padding: 10px 16px;
+  }
+  .tl-table td {
+    padding: 9px 16px;
+    vertical-align: middle;
+    border-color: #f0f0f0;
+  }
+  .tl-table tbody tr:last-child td { border-bottom: none; }
+  .tl-abroad-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: #e9ecef;
+    overflow: hidden;
+    min-width: 80px;
+  }
+  .tl-abroad-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #0d6efd, #6ea8fe);
+  }
+  .tl-days-num {
+    font-weight: 600;
+    color: #212529;
+    font-variant-numeric: tabular-nums;
+  }
+  .tl-pct-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    min-width: 36px;
+  }
 </style>
+
 <div class="container py-4">
 
-  <!-- Page Title -->
-  <h2 class="text-center mb-4">
-    <span class="me-2">🌍</span>Country Timeline for 
-    <span class="text-primary">{{ username }}</span>
-  </h2>
+  <!-- Title -->
+  <div class="text-center mb-4">
+    <p class="tl-page-title">🌍 Country Timeline for <span class="username">{{ username }}</span></p>
+  </div>
 
-  <!-- Timeline Container -->
-  <div id="timeline-container" class="border rounded p-3 bg-white mb-4" style="min-height: 300px;"></div>
+  <!-- Summary stat cards -->
+  {% if days_abroad_by_year %}
+  {% set total_abroad = days_abroad_by_year.values() | sum %}
+  {% set years_list   = days_abroad_by_year.keys()   | list %}
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="tl-stat-card" style="border-color:#0d6efd">
+        <div class="tl-stat-value">{{ years_list | length }}</div>
+        <div class="tl-stat-label">Years tracked</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="tl-stat-card" style="border-color:#198754">
+        <div class="tl-stat-value" style="color:#198754">{{ "%.0f"|format(total_abroad) }}</div>
+        <div class="tl-stat-label">Total days abroad</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="tl-stat-card" style="border-color:#fd7e14">
+        <div class="tl-stat-value" style="color:#fd7e14">{{ "%.0f"|format(total_abroad / (years_list | length)) }}</div>
+        <div class="tl-stat-label">Avg days / year</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="tl-stat-card" style="border-color:#6f42c1">
+        <div class="tl-stat-value" style="color:#6f42c1">{{ residence_country_by_year.values() | list | unique | list | length }}</div>
+        <div class="tl-stat-label">Countries of residence</div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 
-  <!-- Days Spent Abroad Section -->
-  <div class="card shadow-sm">
-    <div class="card-header bg-primary text-white">
-      <i class="bi bi-table me-2"></i> Days Spent Abroad Per Year
+  <!-- Timeline canvas -->
+  <div id="timeline-container" class="mb-4"></div>
+
+  <!-- Days abroad table -->
+  {% if days_abroad_by_year %}
+  {% set max_days = days_abroad_by_year.values() | max %}
+  <div class="card tl-table-card">
+    <div class="card-header text-white">
+      <i class="bi bi-calendar3 me-2"></i> Days Spent Abroad Per Year
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-light" >
+        <table class="table tl-table table-hover mb-0">
+          <thead>
             <tr>
               <th scope="col">Year</th>
               <th scope="col">Residence</th>
-              <th scope="col">Days Abroad</th>
+              <th scope="col">Days abroad</th>
+              <th scope="col" style="width:35%"></th>
             </tr>
           </thead>
           <tbody>
             {% for year, days in days_abroad_by_year.items() %}
-              <tr>
-                <td class="fw-bold">{{ year }}</td>
-                <td class="fs-4">{{ residence_country_by_year[year] }}</td>
-                <td>{{ days }}</td>
-              </tr>
+            {% set pct = (days / 365 * 100) | round(1) %}
+            {% set pct_capped = [pct, 100] | min %}
+            <tr>
+              <td class="fw-semibold text-secondary">{{ year }}</td>
+              <td class="fs-5">
+                {% for flag in residence_flags_by_year.get(year, [residence_country_by_year[year]]) %}{{ flag }}{% endfor %}
+              </td>
+              <td class="tl-days-num">{{ days }}</td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="tl-abroad-bar flex-grow-1">
+                    <div class="tl-abroad-bar-fill" style="width:{{ pct_capped }}%"></div>
+                  </div>
+                  <span class="tl-pct-label">{{ pct }}%</span>
+                </div>
+              </td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     </div>
   </div>
+  {% endif %}
 
 </div>
 
-<!-- Vis.js Timeline Library -->
-<link
-  href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css"
-  rel="stylesheet"
-  type="text/css"
-/>
-<script
-  type="text/javascript"
-  src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"
-></script>
+<div class="tl-tooltip" id="tl-tooltip"></div>
 
-<!-- Custom CSS for Vis.js (Optional) -->
-<style>
-  .vis-item {
-    border-radius: 4px !important;
-    border: 1px solid rgba(0, 0, 0, 0.2) !important;
-  }
-  .vis-item .vis-item-overflow {
-    overflow: visible !important; /* Prevent clipping of flag emojis */
-  }
-</style>
-
-<!-- Initialize Vis.js Timeline -->
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const timelineContainer = document.getElementById("timeline-container");
+document.addEventListener("DOMContentLoaded", function () {
+  const rawBlocks = [
+    {% for item in country_blocks %}
+    { flag: '{{ item.flag }}', start: '{{ item.start }}', end: '{{ item.end }}', color: '{{ item.color }}' },
+    {% endfor %}
+  ];
 
-    const items = [
-      {% for item in country_blocks %}
-        {
-          id: '{{ loop.index }}',
-          content: '<span style="font-size: 1.5rem;">{{ item.flag }}</span>',
-          start: '{{ item.start }}',
-          end: '{{ item.end }}',
-          style: 'background-color: {{ item.color }};'
-        },
-      {% endfor %}
-    ];
+  const container = document.getElementById('timeline-container');
+  const tooltip   = document.getElementById('tl-tooltip');
 
-    const options = {
-      showCurrentTime: true,
-      stack: false,
-      horizontalScroll: true,
-      zoomKey: 'ctrlKey',
-      margin: { item: 10 },
-      minHeight: '200px'
-    };
+  if (!rawBlocks.length) {
+    container.innerHTML = '<p class="text-center text-muted py-5">No data yet.</p>';
+    return;
+  }
 
-    const timeline = new vis.Timeline(timelineContainer, items, options);
+  const blocks = rawBlocks.map(b => ({
+    ...b,
+    startMs: new Date(b.start).getTime(),
+    endMs:   new Date(b.end).getTime(),
+  }));
+
+  // Layout constants
+  const dpr         = window.devicePixelRatio || 1;
+  const LABEL_H     = 70;   // floating label zone above ribbon
+  const RIBBON_H    = 50;   // ribbon height
+  const AXIS_H      = 38;   // axis below ribbon
+  const TOTAL_H     = LABEL_H + RIBBON_H + AXIS_H;
+  const PAD         = 24;   // horizontal padding
+  const LABEL_R     = 15;   // radius of floating flag circles
+  const NARROW_PX   = 32;   // block narrower than this → label above
+
+  const minMs    = Math.min(...blocks.map(b => b.startMs));
+  const maxMs    = Math.max(...blocks.map(b => b.endMs));
+  const totalMs  = maxMs - minMs;
+
+  let W       = 0;
+  let pxPerMs = 0;
+  let panPx   = 0;
+
+  // Build canvas
+  const canvas = document.createElement('canvas');
+  container.appendChild(canvas);
+  const hint = document.createElement('div');
+  hint.id = 'tl-hint';
+  hint.textContent = 'Scroll / pinch to zoom  ·  drag to pan';
+  container.appendChild(hint);
+
+  const ctx = canvas.getContext('2d');
+
+  function msToX(ms) {
+    return PAD + (ms - minMs) * pxPerMs + panPx;
+  }
+
+  function clampPan() {
+    const contentW  = totalMs * pxPerMs;
+    const visibleW  = W - PAD * 2;
+    if (contentW <= visibleW) {
+      panPx = (visibleW - contentW) / 2;
+    } else {
+      panPx = Math.min(0, Math.max(-(contentW - visibleW), panPx));
+    }
+  }
+
+  function roundRectPath(x, y, w, h, r) {
+    const p = new Path2D();
+    p.moveTo(x + r, y);
+    p.lineTo(x + w - r, y);
+    p.arcTo(x + w, y,     x + w, y + r,     r);
+    p.lineTo(x + w, y + h - r);
+    p.arcTo(x + w, y + h, x + w - r, y + h, r);
+    p.lineTo(x + r, y + h);
+    p.arcTo(x,     y + h, x,     y + h - r, r);
+    p.lineTo(x,     y + r);
+    p.arcTo(x,     y,     x + r, y,         r);
+    p.closePath();
+    return p;
+  }
+
+  function render() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, TOTAL_H);
+
+    const RY = LABEL_H; // ribbon top y
+
+    // Screen positions for all blocks
+    const sb = blocks.map(b => ({
+      ...b,
+      x1: msToX(b.startMs),
+      x2: msToX(b.endMs),
+      get w() { return this.x2 - this.x1; }
+    }));
+
+    // Visible blocks
+    const vis = sb.filter(b => b.x2 > PAD && b.x1 < W - PAD);
+
+    // ── Ribbon (clipped to rounded rect) ────────────────────────────
+    ctx.save();
+    ctx.clip(roundRectPath(PAD, RY, W - PAD * 2, RIBBON_H, 7));
+
+    // Fill entire ribbon grey as fallback
+    ctx.fillStyle = '#e9ecef';
+    ctx.fillRect(PAD, RY, W - PAD * 2, RIBBON_H);
+
+    for (const b of sb) {
+      ctx.fillStyle = b.color;
+      ctx.fillRect(b.x1, RY, b.w, RIBBON_H);
+    }
+
+    // Thin white separators between blocks
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 1;
+    for (const b of sb) {
+      ctx.beginPath();
+      ctx.moveTo(b.x1, RY);
+      ctx.lineTo(b.x1, RY + RIBBON_H);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+
+    // Ribbon border
+    ctx.strokeStyle = 'rgba(0,0,0,0.10)';
+    ctx.lineWidth = 1;
+    ctx.stroke(roundRectPath(PAD, RY, W - PAD * 2, RIBBON_H, 7));
+
+    // ── Wide block flags (inside ribbon) ────────────────────────────
+    const wide   = vis.filter(b => b.w >= NARROW_PX);
+    const narrow = vis.filter(b => b.w >  0 && b.w < NARROW_PX);
+
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font         = '22px serif';
+
+    for (const b of wide) {
+      // Clamp center to stay inside ribbon
+      const bx1c = Math.max(b.x1, PAD);
+      const bx2c = Math.min(b.x2, W - PAD);
+      const cx   = (bx1c + bx2c) / 2;
+      const cy   = RY + RIBBON_H / 2;
+      // White pill + shadow so flag is always readable against the block colour
+      const pH = 28, pW = 38, pR = 8;
+      ctx.save();
+      ctx.shadowColor   = 'rgba(0,0,0,0.28)';
+      ctx.shadowBlur    = 7;
+      ctx.shadowOffsetY = 2;
+      ctx.fillStyle = '#fff';
+      ctx.fill(roundRectPath(cx - pW / 2, cy - pH / 2, pW, pH, pR));
+      ctx.restore();
+      ctx.font      = '20px serif';
+      ctx.fillText(b.flag, cx, cy);
+    }
+
+    // ── Narrow block labels (above ribbon) ──────────────────────────
+    // Ideal label x = block center; then push apart so circles don't overlap
+    const labeled = narrow.map(b => ({
+      ...b,
+      idealX: Math.max(PAD + LABEL_R, Math.min(W - PAD - LABEL_R,
+               (b.x1 + b.x2) / 2)),
+      labelX: Math.max(PAD + LABEL_R, Math.min(W - PAD - LABEL_R,
+               (b.x1 + b.x2) / 2)),
+    })).sort((a, b) => a.idealX - b.idealX);
+
+    for (let i = 1; i < labeled.length; i++) {
+      const gap = LABEL_R * 2 + 5;
+      if (labeled[i].labelX - labeled[i - 1].labelX < gap)
+        labeled[i].labelX = labeled[i - 1].labelX + gap;
+    }
+    for (const lb of labeled)
+      lb.labelX = Math.max(PAD + LABEL_R, Math.min(W - PAD - LABEL_R, lb.labelX));
+
+    const LY = LABEL_H - LABEL_R - 5; // label circle centre y
+
+    for (const lb of labeled) {
+      const bCX = Math.max(PAD + 1, Math.min(W - PAD - 1, (lb.x1 + lb.x2) / 2));
+
+      // Dashed connecting line  (label → ribbon top)
+      ctx.save();
+      ctx.strokeStyle = lb.color;
+      ctx.lineWidth   = 1.5;
+      ctx.setLineDash([3, 2]);
+      ctx.beginPath();
+      ctx.moveTo(lb.labelX, LY + LABEL_R + 2);
+      ctx.lineTo(bCX, RY - 1);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      // Tiny downward triangle at ribbon edge  (the "entonnoir" tip)
+      ctx.fillStyle = lb.color;
+      ctx.beginPath();
+      ctx.moveTo(bCX - 4, RY - 1);
+      ctx.lineTo(bCX + 4, RY - 1);
+      ctx.lineTo(bCX,     RY + 6);
+      ctx.closePath();
+      ctx.fill();
+
+      // White circle with coloured border
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(lb.labelX, LY, LABEL_R, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = lb.color;
+      ctx.lineWidth   = 2;
+      ctx.stroke();
+
+      // Flag emoji inside circle
+      ctx.font         = `${LABEL_R * 1.25}px serif`;
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(lb.flag, lb.labelX, LY);
+    }
+
+    // ── Year / month axis ────────────────────────────────────────────
+    drawAxis(RY + RIBBON_H);
+  }
+
+  function drawAxis(y) {
+    const minYear = new Date(minMs).getFullYear();
+    const maxYear = new Date(maxMs).getFullYear() + 1;
+
+    // Baseline
+    ctx.strokeStyle = '#dee2e6';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD, y);
+    ctx.lineTo(W - PAD, y);
+    ctx.stroke();
+
+    // Year ticks + labels
+    for (let yr = minYear; yr <= maxYear; yr++) {
+      const x = msToX(new Date(yr, 0, 1).getTime());
+      if (x < PAD - 30 || x > W - PAD + 30) continue;
+
+      ctx.strokeStyle = '#adb5bd';
+      ctx.lineWidth   = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y + 8);
+      ctx.stroke();
+
+      ctx.fillStyle    = '#495057';
+      ctx.font         = 'bold 11px sans-serif';
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(yr, x, y + 10);
+    }
+
+    // Month ticks (when 1 month ≥ 14 px)
+    const msPerMonth = 30.44 * 86400000;
+    if (pxPerMs * msPerMonth >= 14) {
+      for (let yr = minYear; yr <= maxYear; yr++) {
+        for (let mo = 1; mo < 12; mo++) {
+          const x = msToX(new Date(yr, mo, 1).getTime());
+          if (x < PAD || x > W - PAD) continue;
+          ctx.strokeStyle = '#dee2e6';
+          ctx.lineWidth   = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x, y + 4);
+          ctx.stroke();
+          // Month name when zoomed in further
+          if (pxPerMs * msPerMonth >= 40) {
+            const name = new Date(yr, mo, 1).toLocaleString('default', { month: 'short' });
+            ctx.fillStyle    = '#adb5bd';
+            ctx.font         = '9px sans-serif';
+            ctx.textAlign    = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(name, x, y + 10);
+          }
+        }
+      }
+    }
+  }
+
+  function resize() {
+    const rect = container.getBoundingClientRect();
+    W = Math.max(rect.width, 320);
+    canvas.width        = W * dpr;
+    canvas.height       = TOTAL_H * dpr;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = TOTAL_H + 'px';
+    pxPerMs = (W - PAD * 2) / totalMs;
+    panPx   = 0;
+    render();
+  }
+
+  // ── Interactions ─────────────────────────────────────────────────
+
+  let dragging = false, dragX0 = 0, panX0 = 0;
+
+  canvas.addEventListener('mousedown', e => {
+    dragging = true; dragX0 = e.clientX; panX0 = panPx;
   });
+  window.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    panPx = panX0 + (e.clientX - dragX0);
+    clampPan(); render();
+  });
+  window.addEventListener('mouseup', () => { dragging = false; });
+
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect      = canvas.getBoundingClientRect();
+    const mouseX    = e.clientX - rect.left;
+    const anchorMs  = minMs + (mouseX - PAD - panPx) / pxPerMs;
+    const factor    = e.deltaY < 0 ? 1.2 : 1 / 1.2;
+    const minZoom   = (W - PAD * 2) / totalMs;
+    pxPerMs = Math.max(minZoom, Math.min(minZoom * 3000, pxPerMs * factor));
+    panPx   = mouseX - PAD - (anchorMs - minMs) * pxPerMs;
+    clampPan(); render();
+  }, { passive: false });
+
+  // Hover tooltip
+  canvas.addEventListener('mousemove', e => {
+    if (dragging) { tooltip.style.display = 'none'; return; }
+    const rect   = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const RY     = LABEL_H;
+    if (mouseY >= RY && mouseY <= RY + RIBBON_H) {
+      const ms  = minMs + (mouseX - PAD - panPx) / pxPerMs;
+      const hit = blocks.find(b => ms >= b.startMs && ms <= b.endMs);
+      if (hit) {
+        const fmt = { year: 'numeric', month: 'short', day: 'numeric' };
+        const s   = new Date(hit.startMs).toLocaleDateString(undefined, fmt);
+        const end = new Date(hit.endMs).toLocaleDateString(undefined, fmt);
+        const d   = Math.round((hit.endMs - hit.startMs) / 86400000);
+        tooltip.innerHTML      = `${hit.flag}&nbsp; ${s} → ${end}&nbsp; <b>${d}d</b>`;
+        tooltip.style.display  = 'block';
+        tooltip.style.left     = (e.clientX + 14) + 'px';
+        tooltip.style.top      = (e.clientY - 38) + 'px';
+        return;
+      }
+    }
+    tooltip.style.display = 'none';
+  });
+  canvas.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+
+  // Touch pan
+  let t0 = 0, pPan = 0;
+  canvas.addEventListener('touchstart', e => {
+    t0 = e.touches[0].clientX; pPan = panPx;
+  }, { passive: true });
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    panPx = pPan + (e.touches[0].clientX - t0);
+    clampPan(); render();
+  }, { passive: false });
+
+  // Pinch zoom
+  let pinchD0 = 0, pinchPxPerMs0 = 0;
+  canvas.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      pinchD0 = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY);
+      pinchPxPerMs0 = pxPerMs;
+    }
+  }, { passive: true });
+  canvas.addEventListener('touchmove', e => {
+    if (e.touches.length !== 2) return;
+    const d      = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY);
+    const minZoom = (W - PAD * 2) / totalMs;
+    pxPerMs = Math.max(minZoom, Math.min(minZoom * 3000, pinchPxPerMs0 * d / pinchD0));
+    clampPan(); render();
+  }, { passive: false });
+
+  window.addEventListener('resize', resize);
+  resize();
+});
 </script>
 
 {% endblock %}

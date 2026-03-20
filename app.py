@@ -6682,52 +6682,78 @@ def getTimelineData(username):
     # Sort flags so each run is consistent
     sorted_flags = sorted(flag_set)
 
-    # Generate distinct pastel-ish colors
-    color_list = distinctipy.get_colors(len(sorted_flags), pastel_factor=0.7)
-
-    # Convert to hex
-    flag_colors = dict(zip(sorted_flags, [rgb_to_hex(c) for c in color_list]))
-
-    # Build blocks
-    blocks = []
-    current_flag = trip_data[0]["origin_flag"]
-    block_start = trip_data[0]["start"]
-
-    for i, trip in enumerate(trip_data):
-        origin_flag = trip["origin_flag"]
-        dest_flag = trip["dest_flag"]
-        start = trip["start"]
-        end = trip["end"]
-
-        # Transition if the origin of the next trip doesn't match destination of current
-        next_origin_flag = (
-            trip_data[i + 1]["origin_flag"] if i + 1 < len(trip_data) else None
-        )
-
-        # Close current block if trip ends in a new country
-        if origin_flag != dest_flag or (
-            next_origin_flag and dest_flag != next_origin_flag
-        ):
-            blocks.append(
-                {
-                    "flag": current_flag,
-                    "start": block_start.isoformat(),
-                    "end": end.isoformat(),
-                    "color": flag_colors[current_flag],
-                }
-            )
-            current_flag = dest_flag
-            block_start = end
-
-    # Close the last block
-    blocks.append(
-        {
-            "flag": current_flag,
-            "start": block_start.isoformat(),
-            "end": str(datetime.now()),
-            "color": flag_colors[current_flag],
-        }
+    # Load national colours
+    national_colours_path = os.path.join(
+        os.path.dirname(__file__), "static", "data", "national-colours.json"
     )
+    with open(national_colours_path) as fp:
+        national_colours = json.load(fp)
+
+    def emoji_to_cc(emoji):
+        """Reverse of get_flag_emoji: flag emoji → 2-letter country code."""
+        try:
+            return "".join(chr(ord(c) - 127397) for c in emoji)
+        except Exception:
+            return ""
+
+    # Flags without a national colour entry get generated colours
+    unknown_flags = [f for f in sorted_flags if emoji_to_cc(f) not in national_colours]
+    generated_colors = distinctipy.get_colors(max(len(unknown_flags), 1), pastel_factor=0.7)
+    generated_map = dict(zip(unknown_flags, [rgb_to_hex(c) for c in generated_colors]))
+
+    flag_colors = {
+        f: national_colours[emoji_to_cc(f)][0] if emoji_to_cc(f) in national_colours else generated_map[f]
+        for f in sorted_flags
+    }
+
+    # Build blocks using BOTH departure and arrival observations.
+    # Departures: (trip.start, origin_flag) — where the person was at that moment.
+    # Arrivals:   (trip.end,   dest_flag)   — where the person arrived.
+    # For ties (same timestamp), arrivals take precedence (sort key 1 > 0).
+    raw_events = []
+    for trip in trip_data:
+        raw_events.append((trip["start"], 0, trip["origin_flag"]))  # 0 = departure
+        raw_events.append((trip["end"],   1, trip["dest_flag"]))    # 1 = arrival
+    raw_events.sort(key=lambda x: (x[0], x[1]))
+
+    # Deduplicate: keep last flag at each timestamp (arrivals win over departures)
+    seen: dict = {}
+    for ts, _, flag in raw_events:
+        seen[ts] = flag
+    observations = sorted(seen.items())   # [(datetime, flag), ...]
+
+    if not observations:
+        return [], {}, {}, {}
+
+    raw_blocks = []
+    block_start, current_flag = observations[0]
+
+    for ts, flag in observations[1:]:
+        if flag != current_flag:
+            raw_blocks.append({"flag": current_flag, "start": block_start, "end": ts})
+            block_start = ts
+            current_flag = flag
+        # same country → extend silently
+
+    raw_blocks.append({"flag": current_flag, "start": block_start, "end": datetime.now()})
+
+    # Merge consecutive blocks with the same country (can still happen after dedup)
+    merged = []
+    for b in raw_blocks:
+        if merged and merged[-1]["flag"] == b["flag"]:
+            merged[-1]["end"] = b["end"]
+        else:
+            merged.append(dict(b))
+
+    blocks = [
+        {
+            "flag": b["flag"],
+            "start": b["start"].isoformat(),
+            "end": b["end"].isoformat(),
+            "color": flag_colors[b["flag"]],
+        }
+        for b in merged
+    ]
 
     def daterange(start: datetime, end: datetime):
         current = start
@@ -6756,31 +6782,44 @@ def getTimelineData(username):
             seconds = (overlap_end - overlap_start).total_seconds()
             country_time_by_year[year][flag] += seconds
 
-    # Step 2: determine residence country per year
+    # Step 2: determine residence country per year (primary = most time)
     residence_country_by_year = {
         year: max(countries.items(), key=lambda x: x[1])[0]
         for year, countries in country_time_by_year.items()
     }
 
-    # Step 3: compute time abroad per year
+    # Co-residences: all flags with > 1/3 of the calendar year
+    residence_flags_by_year = {}
+    for year, countries in country_time_by_year.items():
+        year_secs = (366 if calendar.isleap(year) else 365) * 86400
+        threshold = year_secs / 3
+        coflags = [f for f, s in countries.items() if s >= threshold]
+        if not coflags:
+            coflags = [residence_country_by_year[year]]
+        main = residence_country_by_year[year]
+        others = sorted([f for f in coflags if f != main])
+        residence_flags_by_year[year] = [main] + others
+
+    # Step 3: abroad = total time minus ALL residence countries (co-residences don't count as abroad)
     seconds_abroad_by_year = {}
     for year, time_by_country in country_time_by_year.items():
-        res_flag = residence_country_by_year[year]
+        res_flags = set(residence_flags_by_year[year])
         total = sum(time_by_country.values())
-        seconds_abroad_by_year[year] = total - time_by_country[res_flag]
+        residence_time = sum(time_by_country.get(f, 0) for f in res_flags)
+        seconds_abroad_by_year[year] = total - residence_time
 
     # Step 4: convert to days
     days_abroad_by_year = {
         year: round(seconds / 86400, 1)
         for year, seconds in seconds_abroad_by_year.items()
     }
-    return blocks, days_abroad_by_year, residence_country_by_year
+    return blocks, days_abroad_by_year, residence_country_by_year, residence_flags_by_year
 
 
 @app.route("/u/<username>/timeline")
 @login_required
 def timeline(username):
-    blocks, days_abroad_by_year, residence_country_by_year = getTimelineData(username)
+    blocks, days_abroad_by_year, residence_country_by_year, residence_flags_by_year = getTimelineData(username)
     # Pass to the template
     return render_template(
         "timeline.html",
@@ -6788,6 +6827,7 @@ def timeline(username):
         country_blocks=blocks,
         days_abroad_by_year=days_abroad_by_year,
         residence_country_by_year=residence_country_by_year,
+        residence_flags_by_year=residence_flags_by_year,
         nav="bootstrap/navigation.html",
         isCurrent=has_current_trip(get_user_id()),
         **lang[session["userinfo"]["lang"]],
@@ -6798,7 +6838,7 @@ def timeline(username):
 @app.route("/public/<username>/timeline")
 @public_required
 def p_timeline(username):
-    blocks, days_abroad_by_year, residence_country_by_year = getTimelineData(username)
+    blocks, days_abroad_by_year, residence_country_by_year, residence_flags_by_year = getTimelineData(username)
     # Pass to the template
     return render_template(
         "timeline.html",
@@ -6806,6 +6846,7 @@ def p_timeline(username):
         country_blocks=blocks,
         days_abroad_by_year=days_abroad_by_year,
         residence_country_by_year=residence_country_by_year,
+        residence_flags_by_year=residence_flags_by_year,
         nav="bootstrap/public_nav.html",
         isCurrent=has_current_trip(get_user_id()),
         **lang[session["userinfo"]["lang"]],
