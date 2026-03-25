@@ -153,7 +153,7 @@ from src.api.trainset import trainset_blueprint
 from src.api.vagonweb import vagonweb_blueprint
 from src.api.dashboard import dashboard_blueprint
 from src.consts import DbNames, TripTypes
-from src.pg import setup_db
+from src.pg import setup_db, pg_session
 from src.suspicious_activity import (
     check_denied_login,
     log_denied_login,
@@ -5104,6 +5104,54 @@ def delete_user(uid):
         print(e)
 
     return ""
+
+
+@app.route("/admin/rename_user/<int:uid>", methods=["POST"])
+@owner_required
+def rename_user(uid):
+    data = request.get_json()
+    new_username = (data.get("new_username") or "").strip()
+
+    if not new_username:
+        return jsonify(success=False, error="Username cannot be empty"), 400
+
+    user = User.query.get(uid)
+    if not user:
+        return jsonify(success=False, error="User not found"), 404
+
+    if user.username == new_username:
+        return jsonify(success=False, error="New username is the same as current"), 400
+
+    if User.query.filter_by(username=new_username).first():
+        return jsonify(success=False, error="Username already taken"), 409
+
+    old_username = user.username
+    sqlite_tables = ["trip", "percents", "tickets", "tags", "gpx", "fr24_usage", "ai_usage"]
+
+    try:
+        with managed_cursor(mainConn) as cursor:
+            for table in sqlite_tables:
+                cursor.execute(
+                    f"UPDATE {table} SET username = :new WHERE username = :old",
+                    {"new": new_username, "old": old_username},
+                )
+
+        user.username = new_username
+        authDb.session.commit()
+
+        with pg_session() as pg:
+            pg.execute(
+                "UPDATE trainsets SET username = :new WHERE username = :old",
+                {"new": new_username, "old": old_username},
+            )
+            pg.commit()
+
+        mainConn.commit()
+    except Exception as e:
+        print(e)
+        return jsonify(success=False, error=str(e)), 500
+
+    return jsonify(success=True)
 
 
 def fetchTripsPaths(username, lastLocal, public):
