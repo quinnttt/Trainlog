@@ -4885,12 +4885,19 @@ def update_trip_values_from_form_data(trip_id, formData, update_created_ts=False
 
     original_trip = get_trip(trip_id)
 
+    # powerType is inside the map modal which is outside the <form>, so serializeArray()
+    # won't capture it. Extract from the details JSON as fallback.
+    details_parsed = json.loads(formData["details"]) if formData.get("details") else None
+    power_type = formData.get("powerType") or (details_parsed.get("powerType") if details_parsed else None)
+    co2_override = sanitize_param(formData.get("co2Override"))
+
     if "estimated_trip_duration" in formData and "trip_length" in formData:
         countries = getCountriesFromPath(
             [
-                {"lat": coord[0], "lng": coord[1]} for coord in path], 
-                formData["type"], 
-                json.loads(formData.get("details")) if formData.get("details") is not None else None
+                {"lat": coord[0], "lng": coord[1]} for coord in path],
+                formData["type"],
+                details_parsed,
+                power_type,
         )
         estimated_trip_duration = sanitize_param(formData["estimated_trip_duration"])
         trip_length = sanitize_param(formData["trip_length"])
@@ -4943,6 +4950,8 @@ def update_trip_values_from_form_data(trip_id, formData, update_created_ts=False
         visibility=visibility if visibility != "" else None,
         departure_delay=sanitize_param(formData.get("departure_delay")),
         arrival_delay=sanitize_param(formData.get("arrival_delay")),
+        power_type=power_type,
+        co2_override=co2_override,
     )
 
     return trip
