@@ -236,7 +236,9 @@ def getCountriesFromPath(path, type, routing_details=None, powerType=None):
         return json.dumps(countries)
    
     # Determine power type (auto, electric, or thermic/manual)
-    if powerType:
+    if type in ("tram", "funicular"):
+        power_type = "electric"
+    elif powerType:
         power_type = powerType
     else:
         power_type = routing_details.get("powerType", "auto") if routing_details else "auto"

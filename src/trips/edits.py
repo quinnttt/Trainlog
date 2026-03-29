@@ -43,6 +43,7 @@ ALLOWED_BULK_EDIT_FIELDS = frozenset(
 
 def attach_ticket_to_trips(username, ticket_id, trip_ids):
     try:
+        last_modified = datetime.datetime.now()
         placeholders = ", ".join(["?"] * len(trip_ids))
 
         with managed_cursor(mainConn) as cursor:
@@ -68,16 +69,17 @@ def attach_ticket_to_trips(username, ticket_id, trip_ids):
 
             cursor.execute(
                 f"""
-                UPDATE trip SET ticket_id = ? 
+                UPDATE trip SET ticket_id = ?, last_modified = ?
                 WHERE username = ? AND uid IN ({placeholders})
                 """,
-                [ticket_id, username] + trip_ids,
+                [ticket_id, last_modified, username] + trip_ids,
             )
 
         with pg_session() as pg:
             for trip_id in trip_ids:
                 pg.execute(
-                    attach_ticket_query(), {"trip_id": trip_id, "ticket_id": ticket_id}
+                    attach_ticket_query(),
+                    {"trip_id": trip_id, "ticket_id": ticket_id, "last_modified": last_modified},
                 )
         for trip_id in trip_ids:
             compare_trip(trip_id)
@@ -91,6 +93,7 @@ def attach_ticket_to_trips(username, ticket_id, trip_ids):
 
 def change_trips_visibility(username, visibility, trip_ids):
     try:
+        last_modified = datetime.datetime.now()
         placeholders = ", ".join(["?"] * len(trip_ids))
 
         if visibility not in ("public", "friends", "private"):
@@ -111,17 +114,17 @@ def change_trips_visibility(username, visibility, trip_ids):
 
             cursor.execute(
                 f"""
-                UPDATE trip SET visibility = ? 
+                UPDATE trip SET visibility = ?, last_modified = ?
                 WHERE username = ? AND uid IN ({placeholders})
                 """,
-                [visibility, username] + trip_ids,
+                [visibility, last_modified, username] + trip_ids,
             )
 
         with pg_session() as pg:
             for trip_id in trip_ids:
                 pg.execute(
                     change_visibility_query(),
-                    {"trip_id": trip_id, "visibility": visibility},
+                    {"trip_id": trip_id, "visibility": visibility, "last_modified": last_modified},
                 )
         for trip_id in trip_ids:
             compare_trip(trip_id)
