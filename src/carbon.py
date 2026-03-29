@@ -367,7 +367,7 @@ def calculate_carbon_footprint_for_trip(trip, path):
         return calculate_cycle_emissions(distance_km)
     if t == 'scooter':
         return calculate_scooter_emissions(distance_km, power_type or 'manual', countries, start_datetime)
-    if t == 'walk':
+    if t in ('walk', 'ski'):
         return calculate_walk_emissions(distance_km)
-    # ski, other, poi, accommodation, restaurant, etc. → no meaningful carbon figure
+    # other, poi, accommodation, restaurant, etc. → no meaningful carbon figure
     return 0

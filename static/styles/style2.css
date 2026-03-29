@@ -1226,6 +1226,18 @@ html, body {
   stroke: var(--future);
 }
 
+.scooterPolyline.plannedFuturePolyline {
+  stroke-dasharray: 10, 34;
+  stroke: var(--future);
+}
+
+.skiPolyline.plannedFuturePolyline {
+  stroke-dasharray: 1, 25;
+  stroke: var(--future);
+}
+
+
+
 .currentPolyline { 
   animation: blink-live 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
 }

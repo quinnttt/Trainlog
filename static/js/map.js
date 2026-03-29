@@ -124,6 +124,10 @@ function createMap(translations=null, center = [50, 10]) {
                         <li><span class="legend-icon" style="background-color: var(--bus);"></span> <i class="fa-solid fa-bus"></i>&nbsp;${translations['bus']}</li>
                         <li><span class="legend-icon" style="background-color: var(--ferry);"></span> <i class="fa-solid fa-ship"></i>&nbsp;${translations['ferry']}</li>
                         <li><span class="legend-icon" style="background-color: var(--aerialway);"></span> <i class="fa-solid fa-cable-car"></i>&nbsp;${translations['aerialway']}</li>
+                        <li><span class="legend-icon" style="background-color: var(--scooter);"></span> <i class="fa-solid fa-motorcycle"></i>&nbsp;${translations['scooter']}</li>
+                        <li><span class="legend-icon" style="background-color: var(--funicular);"></span> <i class="fa-solid fa-mountain"></i>&nbsp;${translations['funicular']}</li>
+                        <li><span class="legend-icon" style="background-color: var(--rail);"></span> <i class="fa-solid fa-dumbbell"></i>&nbsp;${translations['rail']}</li>
+                        <li><span class="legend-icon" style="background-color: var(--ski);"></span> <i class="fa-solid fa-person-skiing"></i>&nbsp;${translations['ski']}</li>
                     </ul>
                     <hr style="margin: 10px 0; border-top: 1px solid #ccc;" />
                     <ul>
