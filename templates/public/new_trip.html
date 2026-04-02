@@ -1443,7 +1443,11 @@ function copyURL() {
 }
 
 function leave() {
-    history.back();
+    if (document.referrer) {
+        history.back();
+    } else {
+        window.location.href = '/';
+    }
 }
 
 // Initialize when DOM is loaded
