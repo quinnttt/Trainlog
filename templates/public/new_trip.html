@@ -1060,19 +1060,17 @@ if (numberedMarkers.length > 0) {
         trips.forEach(trip => {
             if (trip.time === 'current') {
                 const progress = calculatePosition(trip);
-                const { pastPath, futurePath } = splitPolyline(trip.path, progress);
-                
-                // Ensure coordinates are in the right format [lng, lat]
+
+                // Convert to [lng, lat] and expand air routes to geodesic before splitting
                 let fullCoords = trip.path.map(c => [c[1], c[0]]);
-                let futureCoords = futurePath.map(c => [c[1], c[0]]);
-                
-                // Handle air routes (geodesic lines)
                 if (trip.trip.type === 'air' && fullCoords.length === 2) {
                     fullCoords = MapLibreUtils.createGeodesicLine(fullCoords[0], fullCoords[1]);
                 }
-                if (trip.trip.type === 'air' && futureCoords.length === 2) {
-                    futureCoords = MapLibreUtils.createGeodesicLine(futureCoords[0], futureCoords[1]);
-                }
+
+                // Split the expanded path
+                const splitIndex = Math.floor(progress * fullCoords.length);
+                const pastCoords = fullCoords.slice(0, splitIndex + 1);
+                const futureCoords = fullCoords.slice(splitIndex);
                 
                 // Create full trip feature (will be styled as past)
                 const fullTripFeature = {
@@ -1118,8 +1116,8 @@ if (numberedMarkers.length > 0) {
                 currentTripFeatures.push(fullTripFeature);
                 
                 // Place marker at current position
-                const pegPosition = pastPath[pastPath.length - 1];
-                createCustomMarker([pegPosition[1], pegPosition[0]], 'calc', 'Current Position');
+                const pegPosition = pastCoords[pastCoords.length - 1]; // already [lng, lat]
+                createCustomMarker(pegPosition, 'calc', 'Current Position');
             }
         });
 
