@@ -915,6 +915,7 @@
     "allTime": "alle tijden",
     "inXDays": "over {n} dagen",
     "inXHours": "over {n} uur",
+    "showMore": "meer tonen",
     "soon": "binnenkort",
     "moneySpent": "Uitgaven",
     "co2Emissions": "CO₂-uitstoot",
@@ -929,6 +930,5 @@
     "tl_days_abroad_per_year_title": "Dagen in het buitenland per jaar",
     "tl_residence": "Verblijfplaats",
     "tl_days_abroad_col": "Dagen in het buitenland",
-    "tl_scroll_hint": "Scroll / knijp om in te zoomen  ·  sleep om te pannen",
-    "showMore": "meer tonen"
+    "tl_scroll_hint": "Scroll / knijp om in te zoomen  ·  sleep om te pannen"
 }

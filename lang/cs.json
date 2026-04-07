@@ -915,6 +915,7 @@
     "allTime": "všechny časy",
     "inXDays": "za {n} dní",
     "inXHours": "za {n} hodin",
+    "showMore": "zobrazit více",
     "soon": "brzy",
     "moneySpent": "Výdaje",
     "co2Emissions": "Emise CO₂",
@@ -929,6 +930,5 @@
     "tl_days_abroad_per_year_title": "Dny strávené v zahraničí za rok",
     "tl_residence": "Bydliště",
     "tl_days_abroad_col": "Dny v zahraničí",
-    "tl_scroll_hint": "Posuňte / přiblížením gesto zvětšete  ·  táhněte k posunu",
-    "showMore": "zobrazit více"
+    "tl_scroll_hint": "Posuňte / přiblížením gesto zvětšete  ·  táhněte k posunu"
 }

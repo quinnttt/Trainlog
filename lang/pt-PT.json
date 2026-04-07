@@ -915,6 +915,7 @@
     "allTime": "todo o tempo",
     "inXDays": "em {n} dias",
     "inXHours": "em {n} horas",
+    "showMore": "mostrar mais",
     "soon": "em breve",
     "moneySpent": "Despesa",
     "co2Emissions": "Emissões de CO₂",
@@ -929,6 +930,5 @@
     "tl_days_abroad_per_year_title": "Dias Passados no Estrangeiro Por Ano",
     "tl_residence": "Residência",
     "tl_days_abroad_col": "Dias no estrangeiro",
-    "tl_scroll_hint": "Rolar / aproximar para ampliar  ·  arrastar para mover",
-    "showMore": "mostrar mais"
+    "tl_scroll_hint": "Rolar / aproximar para ampliar  ·  arrastar para mover"
 }

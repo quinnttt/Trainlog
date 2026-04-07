@@ -915,6 +915,7 @@
     "allTime": "sve vrijeme",
     "inXDays": "za {n} dana",
     "inXHours": "za {n} sati",
+    "showMore": "prikaži više",
     "soon": "uskoro",
     "moneySpent": "Rashodi",
     "co2Emissions": "Emisije CO₂",
@@ -929,6 +930,5 @@
     "tl_days_abroad_per_year_title": "Dani provedeni u inozemstvu godišnje",
     "tl_residence": "Prebivalište",
     "tl_days_abroad_col": "Dani u inozemstvu",
-    "tl_scroll_hint": "Skrolaj / štipni za zumiranje  ·  povuci za pomicanje",
-    "showMore": "prikaži više"
+    "tl_scroll_hint": "Skrolaj / štipni za zumiranje  ·  povuci za pomicanje"
 }

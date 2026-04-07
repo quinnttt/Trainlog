@@ -915,6 +915,7 @@
     "allTime": "kaikkina aikoina",
     "inXDays": "{n} päivän päästä",
     "inXHours": "{n} tunnin päästä",
+    "showMore": "näytä lisää",
     "soon": "pian",
     "moneySpent": "Kustannukset",
     "co2Emissions": "CO₂-päästöt",
@@ -929,6 +930,5 @@
     "tl_days_abroad_per_year_title": "Ulkomailla vietetyt päivät vuodessa",
     "tl_residence": "Asuinpaikka",
     "tl_days_abroad_col": "Päivät ulkomailla",
-    "tl_scroll_hint": "Vieritä / nipistä suurentaaksesi  ·  vedä siirtääksesi",
-    "showMore": "näytä lisää"
+    "tl_scroll_hint": "Vieritä / nipistä suurentaaksesi  ·  vedä siirtääksesi"
 }

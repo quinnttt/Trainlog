@@ -915,6 +915,7 @@
     "allTime": "alle tider",
     "inXDays": "om {n} dage",
     "inXHours": "om {n} timer",
+    "showMore": "vis mere",
     "soon": "snart",
     "moneySpent": "Udgifter",
     "co2Emissions": "CO₂-udledning",
@@ -929,6 +930,5 @@
     "tl_days_abroad_per_year_title": "Dage Brugt i Udlandet Om Året",
     "tl_residence": "Bopæl",
     "tl_days_abroad_col": "Dage i udlandet",
-    "tl_scroll_hint": "Rul / knib for at zoome  ·  træk for at panorere",
-    "showMore": "vis mere"
+    "tl_scroll_hint": "Rul / knib for at zoome  ·  træk for at panorere"
 }

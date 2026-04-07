@@ -915,6 +915,7 @@
     "allTime": "wszystkie czasy",
     "inXDays": "za {n} dni",
     "inXHours": "za {n} godzin",
+    "showMore": "pokaż więcej",
     "soon": "wkrótce",
     "moneySpent": "Wydatki",
     "co2Emissions": "Emisje CO₂",
@@ -929,6 +930,5 @@
     "tl_days_abroad_per_year_title": "Dni spędzone za granicą na rok",
     "tl_residence": "Miejsce zamieszkania",
     "tl_days_abroad_col": "Dni za granicą",
-    "tl_scroll_hint": "Przewijaj / ściśnij, aby powiększyć  ·  przeciągnij, aby przesunąć",
-    "showMore": "pokaż więcej"
+    "tl_scroll_hint": "Przewijaj / ściśnij, aby powiększyć  ·  przeciągnij, aby przesunąć"
 }

@@ -915,6 +915,7 @@
     "allTime": "minden idők",
     "inXDays": "{n} nap múlva",
     "inXHours": "{n} óra múlva",
+    "showMore": "több megjelenítése",
     "soon": "hamarosan",
     "moneySpent": "Kiadások",
     "co2Emissions": "CO₂-kibocsátás",
@@ -929,6 +930,5 @@
     "tl_days_abroad_per_year_title": "Külföldön töltött napok évente",
     "tl_residence": "Lakcím",
     "tl_days_abroad_col": "Napok külföldön",
-    "tl_scroll_hint": "Görgetés / csípés a nagyításhoz  ·  húzás a mozgatáshoz",
-    "showMore": "több megjelenítése"
+    "tl_scroll_hint": "Görgetés / csípés a nagyításhoz  ·  húzás a mozgatáshoz"
 }

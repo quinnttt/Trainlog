@@ -915,6 +915,7 @@
     "allTime": "alla tider",
     "inXDays": "om {n} dagar",
     "inXHours": "om {n} timmar",
+    "showMore": "visa mer",
     "soon": "snart",
     "moneySpent": "Utgifter",
     "co2Emissions": "CO₂-utsläpp",
@@ -929,6 +930,5 @@
     "tl_days_abroad_per_year_title": "Dagar tillbringade utomlands per år",
     "tl_residence": "Bostad",
     "tl_days_abroad_col": "Dagar utomlands",
-    "tl_scroll_hint": "Skrolla / nyp för att zooma  ·  dra för att panorera",
-    "showMore": "visa mer"
+    "tl_scroll_hint": "Skrolla / nyp för att zooma  ·  dra för att panorera"
 }

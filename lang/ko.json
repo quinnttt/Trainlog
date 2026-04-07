@@ -915,6 +915,7 @@
     "allTime": "전체 기간",
     "inXDays": "{n}일 후에",
     "inXHours": "{n}시간 후에",
+    "showMore": "더 보기",
     "soon": "곧",
     "moneySpent": "지출",
     "co2Emissions": "CO₂ 배출량",
@@ -929,6 +930,5 @@
     "tl_days_abroad_per_year_title": "연간 해외 체류 일수",
     "tl_residence": "거주지",
     "tl_days_abroad_col": "해외 일수",
-    "tl_scroll_hint": "스크롤 / 핀치하여 확대  ·  드래그하여 이동",
-    "showMore": "더 보기"
+    "tl_scroll_hint": "스크롤 / 핀치하여 확대  ·  드래그하여 이동"
 }

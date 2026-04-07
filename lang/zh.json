@@ -915,6 +915,7 @@
     "allTime": "所有时间",
     "inXDays": "在{n}天内",
     "inXHours": "在{n}小时内",
+    "showMore": "显示更多",
     "soon": "很快",
     "moneySpent": "支出",
     "co2Emissions": "CO₂排放",
@@ -929,6 +930,5 @@
     "tl_days_abroad_per_year_title": "每年在国外度过的天数",
     "tl_residence": "居住地",
     "tl_days_abroad_col": "国外天数",
-    "tl_scroll_hint": "滚动 / 捏合以缩放  ·  拖动以平移",
-    "showMore": "显示更多"
+    "tl_scroll_hint": "滚动 / 捏合以缩放  ·  拖动以平移"
 }

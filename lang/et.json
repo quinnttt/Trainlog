@@ -915,6 +915,7 @@
     "allTime": "kogu aeg",
     "inXDays": "{n} päeva pärast",
     "inXHours": "{n} tunni pärast",
+    "showMore": "näita rohkem",
     "soon": "peagi",
     "moneySpent": "Kulu",
     "co2Emissions": "CO₂ emissioonid",
@@ -929,6 +930,5 @@
     "tl_days_abroad_per_year_title": "Välismaal veedetud päevad aastas",
     "tl_residence": "Elukoht",
     "tl_days_abroad_col": "Päevad välismaal",
-    "tl_scroll_hint": "Kerige / näpistage suumimiseks  ·  lohistage liikumiseks",
-    "showMore": "näita rohkem"
+    "tl_scroll_hint": "Kerige / näpistage suumimiseks  ·  lohistage liikumiseks"
 }
