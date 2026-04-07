@@ -3425,6 +3425,15 @@ def vector_style(language, style):
     return jsonify(vectorStyle)
 
 
+@app.route("/getORMStyle/<style>.json")
+def orm_style(style):
+    allowed = {"standard", "speed", "signals", "electrification", "track", "operator"}
+    if style not in allowed:
+        return ("Not found", 404)
+    resp = requests.get(f"https://openrailwaymap.app/style/{style}.json", timeout=10)
+    return jsonify(resp.json())
+
+
 @app.route("/u/<username>/new_map")
 @login_required
 def new_map(username):

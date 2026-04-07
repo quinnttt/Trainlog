@@ -38,7 +38,7 @@ function createMap(translations=null, center = [50, 10]) {
         tileserverUrl = 'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png';
         attribution = '&copy; OpenStreetMap France | ' + attribution;
     } else if (serverType && serverType.startsWith('jawg-') && allowed_styles.includes(serverType)) {
-        tileserverUrl = `https://tiles.trainlog.me/tile/${serverType}/{x}/{y}/{z}/{r}`;
+        tileserverUrl = `http://tiles.trainlog.me:8000/tile/${serverType}/{x}/{y}/{z}/{r}`;
         attribution = '<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
     } else if (serverType === 'orm') {
         tileserverUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
