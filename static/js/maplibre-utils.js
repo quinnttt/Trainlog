@@ -245,10 +245,10 @@ function getTileServerConfig(serverType, userLanguage) {
             break;
         default:
             if (serverType && serverType.startsWith('jawg-')) {
-                tileUrl = `http://tiles.trainlog.me:8000/tile/${serverType}/{x}/{y}/{z}/${userLanguage}`;
+                tileUrl = `https://tiles.trainlog.me/tile/${serverType}/{x}/{y}/{z}/${userLanguage}`;
                 attribution = '<a href="https://jawg.io">© Jawg</a> © OpenStreetMap contributors';
             } else if (serverType === 'thunderforest-transport') {
-                tileUrl = `http://tiles.trainlog.me:8000/tile/${serverType}/{x}/{y}/{z}`;
+                tileUrl = `https://tiles.trainlog.me/tile/${serverType}/{x}/{y}/{z}`;
                 attribution = '© Thunderforest, © OpenStreetMap contributors';
             } else if (serverType && serverType.startsWith("orm-vector-")) {
                 // Vector ORM is handled by initializeMapLibre; fall back to base raster
@@ -262,7 +262,7 @@ function getTileServerConfig(serverType, userLanguage) {
                     serverType = parts[0];
                     baseStyle = parts[1];
                 }
-                tileUrl = `http://tiles.trainlog.me:8000/tile/${serverType}/{x}/{y}/{z}?base_style=${baseStyle}`;
+                tileUrl = `https://tiles.trainlog.me/tile/${serverType}/{x}/{y}/{z}?base_style=${baseStyle}`;
                 attribution = '© Openrailwaymap, © OpenStreetMap contributors, © Jawg';
             }
     }
