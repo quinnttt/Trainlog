@@ -145,7 +145,7 @@ from src.api.leaderboards import _getLeaderboardUsers
 from src.api.news import news_blueprint
 from src.api.finance import finance_blueprint
 from src.api.carbon import carbon_blueprint
-from src.api.wrapped import wrapped_blueprint
+from src.api.wrapped import wrapped_blueprint, DISTANCE_COMPARISONS, DURATION_COMPARISONS
 from src.api.stats import stats_blueprint, fetch_stats, get_distinct_stat_years
 from src.api.ai import ai_blueprint
 from src.api.trainset import trainset_blueprint
@@ -9959,11 +9959,14 @@ def video(tripIds):
 @app.route("/u/<username>/dashboard")
 @login_required
 def user_dashboard(username):
+    import json
     return render_template(
         "dashboard.html",
         title=lang[session["userinfo"]["lang"]]["user_dashboard"],
         username=username,
         nav="bootstrap/navigation.html",
+        dist_comps_json=json.dumps(DISTANCE_COMPARISONS),
+        dur_comps_json=json.dumps(DURATION_COMPARISONS),
         **lang[session["userinfo"]["lang"]],
         **session["userinfo"],
     )

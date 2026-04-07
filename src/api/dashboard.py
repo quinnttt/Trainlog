@@ -901,7 +901,6 @@ def dashboard_year(username):
         "trips_change": trips_change,
         "km_change": km_change,
         "busiest_month": serialize_dict(data.get("busiest_month")),
-        "distance_comparisons": data.get("distance_comparisons", []),
         "duration_hours": data.get("duration_hours"),
         # Highlights
         "top_operators_alltime": [

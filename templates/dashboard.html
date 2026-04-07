@@ -739,6 +739,9 @@
   </div><!-- /container -->
 </div>
 
+<script id="dist-comps-data" type="application/json">{{ dist_comps_json | safe }}</script>
+<script id="dur-comps-data"  type="application/json">{{ dur_comps_json  | safe }}</script>
+
 <script>
 const username = "{{ username }}";
 const countriesBaseUrl = "{{ url_for('countries', username=username, cc='__CC__') }}";
@@ -1027,6 +1030,74 @@ function countryFlags(list) {
   }</div>`;
 }
 
+// Static comparison tables — mirrors wrapped.py, used for client-side all-time computation.
+// Single source of truth: definitions injected from wrapped.py via app.py
+const _DIST_COMPS = JSON.parse(document.getElementById("dist-comps-data").textContent);
+const _DUR_COMPS  = JSON.parse(document.getElementById("dur-comps-data").textContent);
+const _COMP_NAMES = {
+  "distComp_english_channel":           "{{ distComp_english_channel }}",
+  "distComp_english_channel_pct":       "{{ distComp_english_channel_pct }}",
+  "distComp_marathon":                  "{{ distComp_marathon }}",
+  "distComp_marathon_pct":              "{{ distComp_marathon_pct }}",
+  "distComp_iss_altitude":              "{{ distComp_iss_altitude }}",
+  "distComp_iss_altitude_pct":          "{{ distComp_iss_altitude_pct }}",
+  "distComp_proclaimers":               "{{ distComp_proclaimers }}",
+  "distComp_proclaimers_pct":           "{{ distComp_proclaimers_pct }}",
+  "distComp_mordor":                    "{{ distComp_mordor }}",
+  "distComp_mordor_pct":                "{{ distComp_mordor_pct }}",
+  "distComp_moon_circumference":        "{{ distComp_moon_circumference }}",
+  "distComp_moon_circumference_pct":    "{{ distComp_moon_circumference_pct }}",
+  "distComp_longest_flight":            "{{ distComp_longest_flight }}",
+  "distComp_longest_flight_pct":        "{{ distComp_longest_flight_pct }}",
+  "distComp_earth_circumference":       "{{ distComp_earth_circumference }}",
+  "distComp_earth_circumference_pct":   "{{ distComp_earth_circumference_pct }}",
+  "distComp_earth_moon":                "{{ distComp_earth_moon }}",
+  "distComp_earth_moon_pct":            "{{ distComp_earth_moon_pct }}",
+  "durComp_longest_tennis":             "{{ durComp_longest_tennis }}",
+  "durComp_longest_tennis_pct":         "{{ durComp_longest_tennis_pct }}",
+  "durComp_lotr_marathon":              "{{ durComp_lotr_marathon }}",
+  "durComp_lotr_marathon_pct":          "{{ durComp_lotr_marathon_pct }}",
+  "durComp_lindbergh_flight":           "{{ durComp_lindbergh_flight }}",
+  "durComp_lindbergh_flight_pct":       "{{ durComp_lindbergh_flight_pct }}",
+  "durComp_orient_express":             "{{ durComp_orient_express }}",
+  "durComp_orient_express_pct":         "{{ durComp_orient_express_pct }}",
+  "durComp_apollo11":                   "{{ durComp_apollo11 }}",
+  "durComp_apollo11_pct":               "{{ durComp_apollo11_pct }}",
+  "durComp_lunar_orbit":                "{{ durComp_lunar_orbit }}",
+  "durComp_lunar_orbit_pct":            "{{ durComp_lunar_orbit_pct }}",
+  "durComp_80_days":                    "{{ durComp_80_days }}",
+  "durComp_80_days_pct":                "{{ durComp_80_days_pct }}",
+  "durComp_bear_hibernation":           "{{ durComp_bear_hibernation }}",
+  "durComp_bear_hibernation_pct":       "{{ durComp_bear_hibernation_pct }}",
+};
+
+function _computeComps(value, table, field) {
+  return table.reduce((acc, c) => {
+    const ratio = value / c[field];
+    if (ratio >= 0.1) acc.push({
+      key: c.key, icon: c.icon,
+      times:   ratio < 10 ? Math.round(ratio * 10) / 10 : Math.round(ratio),
+      percent: ratio < 1  ? Math.round(ratio * 100) : null,
+    });
+    return acc;
+  }, []);
+}
+
+function _randComp(list) {
+  if (!list || !list.length) return null;
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function _compHtml(cmp) {
+  if (!cmp) return null;
+  const isPct = cmp.percent != null;
+  const key = isPct ? cmp.key + "_pct" : cmp.key;
+  const template = _COMP_NAMES[key] || _COMP_NAMES[cmp.key] || cmp.key;
+  const n = isPct ? cmp.percent : cmp.times;
+  const icon = `<i class="${esc(cmp.icon)}" style="margin-right:0.3rem;color:var(--text-muted);font-size:0.85em;"></i>`;
+  return icon + template.replace("{n}", n);
+}
+
 function renderYearCard(d) {
   const isCurrentYear = (d.year === new Date().getFullYear());
   const isAllTime = (_hlScope === "alltime");
@@ -1050,18 +1121,25 @@ function renderYearCard(d) {
     </div>
   </div>`;
   const yearRows = [];
+
   if (isAllTime && _totalsData) {
     const h = Math.floor((_totalsData.total_duration_sec || 0) / 3600);
     if (h) yearRows.push(statRow("{{ hoursOnTrains }}", `${fmt(h)}h`));
     if (_totalsData.country_count) yearRows.push(statRow("{{ crossedCountries }}", fmt(_totalsData.country_count)));
+    // Compute comparisons client-side from all-time totals
+    const distCmps = km   ? _computeComps(km, _DIST_COMPS, "km") : [];
+    const durCmps  = h    ? _computeComps(h,  _DUR_COMPS,  "h")  : [];
+    const distHtml = _compHtml(_randComp(distCmps));
+    const durHtml  = _compHtml(_randComp(durCmps));
+    if (distHtml) yearRows.push(statRow("{{ distanceComparison }}", distHtml));
+    if (durHtml)  yearRows.push(statRow("{{ durationComparison }}", durHtml));
   } else {
     if (d.duration_hours) yearRows.push(statRow("{{ hoursOnTrains }}", `${fmt(d.duration_hours)}h`));
     if (d.country_count)  yearRows.push(statRow("{{ crossedCountries }}", fmt(d.country_count)));
-    if (d.distance_comparisons && d.distance_comparisons.length) {
-      const cmp = d.distance_comparisons[Math.floor(Math.random() * d.distance_comparisons.length)];
-      const val = cmp.times >= 1 ? `${cmp.times}× ${cmp.name} ${cmp.emoji}` : `${cmp.percent}% of ${cmp.name} ${cmp.emoji}`;
-      yearRows.push(statRow("{{ distanceComparison }}", val));
-    }
+    const distHtml = _compHtml(_randComp(_computeComps(d.total_km || 0, _DIST_COMPS, "km")));
+    const durHtml  = _compHtml(_randComp(_computeComps(d.duration_hours || 0, _DUR_COMPS, "h")));
+    if (distHtml) yearRows.push(statRow("{{ distanceComparison }}", distHtml));
+    if (durHtml)  yearRows.push(statRow("{{ durationComparison }}", durHtml));
     if (d.busiest_month) {
       const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
       yearRows.push(statRow("{{ busiestMonth }}", `${months[d.busiest_month.month - 1]} (${d.busiest_month.trips} {{ trips }})`));
