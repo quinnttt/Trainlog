@@ -2177,13 +2177,12 @@ def parse_gpx_advanced(username):
                 suggested_type = "other"
                 if maprika_data and maprika_data['name']:
                     name_lower = maprika_data['name'].lower()
-                    match name_lower:
-                        case 'ski' | 'skiing':
-                            suggested_type = 'ski'
-                        case 'cycle' | 'bike':
-                            suggested_type = 'cycle'
-                        case 'walk' | 'hike':
-                            suggested_type = 'walk'
+                    if 'ski' in name_lower or 'skiing' in name_lower:
+                        suggested_type = 'ski'
+                    elif 'cycle' in name_lower or 'bike' in name_lower:
+                        suggested_type = 'cycle'
+                    elif 'walk' in name_lower or 'hike' in name_lower:
+                        suggested_type = 'walk'
 
                 # Build trip data
                 trip_data = {
