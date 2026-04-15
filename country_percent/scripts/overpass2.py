@@ -163,11 +163,7 @@ def process_railway_geometry(iso_code,iso_spec):
         return gdf.iloc[0].geometry
 
     preprocessed_path = "countries/preprocessed/" + iso_code + ".json"
-    match iso_spec:
-        case 1:
-            processed_path = "countries/processed/" + iso_code + ".geojson"
-        case 2:
-            processed_path = "countries/processed/" + iso_code + ".geojson"
+    processed_path = "countries/processed/" + iso_code + ".geojson"
 
     os.makedirs("countries/preprocessed", exist_ok=True)
     os.makedirs("countries/processed", exist_ok=True)
