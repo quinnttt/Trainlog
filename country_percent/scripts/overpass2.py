@@ -202,8 +202,6 @@ def process_railway_geometry(iso_code,iso_spec):
                 )
                 feature = {
                     "type": "Feature",
-                    "id": element["id"],
-                    "properties": {},
                     "geometry": shape(buffered_geometry).__geo_interface__,
                 }
                 stripped_data["features"].append(feature)
