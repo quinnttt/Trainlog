@@ -1021,6 +1021,7 @@ fetch(`/u/${username}/dashboard_trips`)
 
 let _hlScope = "ytd";  // "ytd" | "alltime"
 let _hlYear  = new Date().getFullYear();
+let _hlMonth = new Data().getMonth();
 let _hlData  = null;   // last fetched dashboard_year response
 
 function countryFlags(list) {
