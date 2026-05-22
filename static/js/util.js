@@ -491,7 +491,7 @@ function toRouting(data, routingUrl, type){
 
   if ("originManualToggle" in  newTrip && newTrip["originManualName"].trim()!=""){
     label = newTrip["originManualName"];
-    newTrip["originStation"] = [[Number(newTrip["originManualLat"]), Number(newTrip["originManualLng"])], label];
+    newTrip["originStation"] = [[Number(newTrip["originManualLat"].replace(',','.')), Number(newTrip["originManualLng"].replace(',','.'))], label];
 
   }
   else{
@@ -500,7 +500,7 @@ function toRouting(data, routingUrl, type){
 
   if ("destinationManualToggle" in  newTrip && newTrip["destinationManualName"].trim()!=""){
     label = newTrip["destinationManualName"];
-    newTrip["destinationStation"] = [[Number(newTrip["destinationManualLat"]), Number(newTrip["destinationManualLng"])], label];
+    newTrip["destinationStation"] = [[Number(newTrip["destinationManualLat"].replace(',','.')), Number(newTrip["destinationManualLng"].replace(',','.'))], label];
   }
   else{
     newTrip["destinationStation"] = globalStationDict[newTrip["destinationStation"]];
@@ -718,28 +718,27 @@ function manualCopyHandler(){
 
         if (pastedData !== lastValue) {
           // 1. Strip out parentheses and extra whitespace
-          var strippedData = pastedData.replace(/[()]/g, '').trim();
-          
+          var strippedData = pastedData.replace(/[^0-9,.\/-]/g, '').replace('/',',');
           // Existing regex patterns
           var englishFormat = /^(\-?\d+(\.\d+)?)[,\/\s\u00A0]*(\-?\d+(\.\d+)?)$/;
           var internationalFormat = /^(\-?\d+(,\d+)?)[;\s\u00A0]*(\-?\d+(,\d+)?)$/;
+          var commaFormat = /^(\-?\d+(\,\d+)?)[,\/\s\u00A0]*(\-?\d+(\,\d+)?)$/;
 
         // 2. Check if it matches your existing formats
         if (englishFormat.test(strippedData)) {
-            // Split by comma or slash
-            var coordinates = strippedData.split(/[,/]/).map(Number);
-            e.preventDefault();
-            document.getElementById(inputId).value = coordinates[0];
-            document.getElementById(inputId.replace('Lat', 'Lng')).value = coordinates[1];
+            // Split by comma
+            var coordinates = strippedData.split(/[,]/);
         } else if (internationalFormat.test(strippedData)) {
             // Split by semicolon
-            var coordinates = strippedData.split(';').map(function(item) {
-                return Number(item.replace(',', '.'));
-            });
-            e.preventDefault();
-            document.getElementById(inputId).value = coordinates[0];
-            document.getElementById(inputId.replace('Lat', 'Lng')).value = coordinates[1];
+            var coordinates = strippedData.split(';');
+        } else if (commaFormat.test(strippedData)) {
+          // Split by second comma
+          var coordinates = strippedData.match(/[^ ,]+,[^ ,]+/g)
         }
+        e.preventDefault();
+        document.getElementById(inputId).value = coordinates[0];
+        document.getElementById(inputId.replace('Lat', 'Lng')).value = coordinates[1];
+
         lastValue = document.getElementById(inputId).value;
       }
     });
