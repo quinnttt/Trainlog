@@ -1,27 +1,39 @@
+# IDE
 .vscode/*
 .idea/*
+
+# Python
 **/__pycache__/*
+.python-version
+.venv/
+venv/
+## Python: Flask
+.flask_secret
+
+# NodeJS
+node_modules/
+package.json
+package-lock.json
+server.js
+
+# Database
 *.db
 *.db-wal
 *.db-shm
 *.dump
 !databases/data.db
-.flask_secret
-config.yaml
-# any local copy of it too (config.yaml2, config.yaml.prod, …)
+databases/cache/
+databases/health/
+
+# env, config
 config.yaml*
-.python-version
 .env
-.venv/
-logs/
+
+# Trainlog
 static/images/operator_logos/
 static/images/wagons/images/_vw_staging/
-node_modules/
-package.json
-package-lock.json
-server.js
-venv/
 country_percent/countries/preprocessed/
-databases/cache/
+
+# Misc
+logs/
 backup/
-databases/health/
