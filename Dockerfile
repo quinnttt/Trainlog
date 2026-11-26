@@ -1,7 +1,5 @@
-# Use an official Python runtime as a parent image
 FROM python:3.13
 
-# Set the working directory in the container to /code
 WORKDIR /code
 
 # Fonts the Discord trip cards fall back to (src/trip_card.py). Montserrat has
@@ -12,11 +10,18 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends fonts-droid-fallback fonts-noto-core \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the current directory contents into the container at /code
-COPY ./requirements.txt /code
 
-# Install any needed packages specified in requirements.txt
-RUN pip install -r requirements.txt
+COPY --from=ghcr.io/astral-sh/uv:0.13.10 /uv /uvx /usr/local/bin/
+
+# Define uv venv
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install dependencies 
+COPY pyproject.toml uv.lock /code/
+RUN uv sync --frozen --no-dev --no-install-project
+
+COPY . /code
 
 RUN git config --global --add safe.directory /code
 
